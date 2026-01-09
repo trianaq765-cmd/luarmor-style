@@ -1,5 +1,5 @@
 const express=require('express'),axios=require('axios'),crypto=require('crypto'),cors=require('cors'),helmet=require('helmet'),rateLimit=require('express-rate-limit'),path=require('path'),fs=require('fs'),config=require('./config'),db=require('./lib/redis'),webhook=require('./lib/webhook');
-const app=express(),SESSIONS=new Map(),dynamicWhitelist={userIds:new Set(),hwids:new Set()},suspendedUsers={hwids:new Map(),userIds:new Map(),sessions:new Map()};
+const app=express(),SESSIONS=new Map(),dynamicWhitelist={userIds:new Set(),hwids:new Set(),ips:new Set()},suspendedUsers={hwids:new Map(),userIds:new Map(),ips:new Map(),sessions:new Map()};
 
 // === CONSTANTS ===
 const BOT_PATTERNS=['python','python-requests','aiohttp','httpx','curl','wget','libcurl','axios','node-fetch','got/','undici','superagent','java/','okhttp','apache-http','go-http','golang','ruby','perl','php/','postman','insomnia','paw/','bot','crawler','spider','scraper','slurp','googlebot','bingbot','yandex','facebookexternalhit','twitterbot','discordbot','telegrambot','burp','fiddler','charles','mitmproxy','nmap','nikto','sqlmap','nuclei','httpie','scanner','checker','monitor','probe'];
