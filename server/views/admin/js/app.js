@@ -1,397 +1,205 @@
-/* ============================================
-   APP - Main Application Controller (FIXED)
-   ============================================ */
+const App={
+currentPage:'dashboard',
+initialized:false,
 
-const App = {
-    currentPage: 'dashboard',
-    initialized: false,
-    
-    // Initialize application
-    async init() {
-        if (this.initialized) return;
-        
-        console.log('[App] Initializing...');
-        
-        // Show loading state
-        this.showLoadingState();
-        
-        // Check authentication
-        const isAuth = await Auth.check();
-        
-        if (isAuth) {
-            console.log('[App] User authenticated, showing dashboard');
-            this.showDashboard();
-        } else {
-            console.log('[App] User not authenticated, showing login');
-            this.showLogin();
-        }
-        
-        this.bindGlobalEvents();
-        this.initialized = true;
-    },
-    
-    // Show loading state
-    showLoadingState() {
-        const loginScreen = document.getElementById('loginScreen');
-        const loginBtn = document.getElementById('loginBtn');
-        
-        if (loginBtn) {
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<span class="spinner spinner-sm"></span> Checking...';
-        }
-    },
-    
-    // Show login screen
-    showLogin() {
-        const loginScreen = document.getElementById('loginScreen');
-        const dashboardScreen = document.getElementById('dashboardScreen');
-        const loginBtn = document.getElementById('loginBtn');
-        const loginError = document.getElementById('loginError');
-        
-        if (loginScreen) loginScreen.classList.remove('hidden');
-        if (dashboardScreen) dashboardScreen.classList.add('hidden');
-        
-        // Reset login button
-        if (loginBtn) {
-            loginBtn.disabled = false;
-            loginBtn.innerHTML = '🚀 Login';
-        }
-        
-        // Hide error
-        if (loginError) loginError.classList.add('hidden');
-        
-        // Focus on input
-        setTimeout(() => {
-            const input = document.getElementById('adminKeyInput');
-            if (input) {
-                input.value = '';
-                input.focus();
-            }
-        }, 100);
-    },
-    
-    // Show dashboard
-    showDashboard() {
-        const loginScreen = document.getElementById('loginScreen');
-        const dashboardScreen = document.getElementById('dashboardScreen');
-        
-        if (loginScreen) loginScreen.classList.add('hidden');
-        if (dashboardScreen) dashboardScreen.classList.remove('hidden');
-        
-        // Navigate to default page
-        this.navigate('dashboard');
-    },
-    
-    // Handle login
-    async login() {
-        const input = document.getElementById('adminKeyInput');
-        const btn = document.getElementById('loginBtn');
-        const errorEl = document.getElementById('loginError');
-        const errorText = document.getElementById('loginErrorText');
-        
-        if (!input || !btn) {
-            console.error('[App] Login elements not found');
-            return;
-        }
-        
-        const key = input.value;
-        
-        // Clear previous error
-        if (errorEl) errorEl.classList.add('hidden');
-        input.classList.remove('error');
-        
-        // Validate
-        if (!key || key.trim().length === 0) {
-            this.showLoginError('Masukkan admin key', input, errorEl, errorText);
-            return;
-        }
-        
-        // Loading state
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner spinner-sm"></span> Verifying...';
-        
-        console.log('[App] Starting login...');
-        
-        try {
-            const result = await Auth.login(key);
-            
-            if (result.success) {
-                // Success
-                btn.innerHTML = '✓ Success!';
-                btn.classList.add('btn-success');
-                
-                setTimeout(() => {
-                    this.showDashboard();
-                    Utils.toast('Welcome to Script Shield!', 'success');
-                    
-                    // Reset button for next time
-                    btn.classList.remove('btn-success');
-                    btn.innerHTML = '🚀 Login';
-                    btn.disabled = false;
-                }, 500);
-                
-            } else {
-                // Failed
-                this.showLoginError(result.error || 'Invalid admin key', input, errorEl, errorText);
-                btn.disabled = false;
-                btn.innerHTML = '🚀 Login';
-            }
-        } catch (err) {
-            console.error('[App] Login error:', err);
-            this.showLoginError('Terjadi kesalahan: ' + err.message, input, errorEl, errorText);
-            btn.disabled = false;
-            btn.innerHTML = '🚀 Login';
-        }
-    },
-    
-    // Show login error
-    showLoginError(message, input, errorEl, errorText) {
-        if (errorText) errorText.textContent = message;
-        if (errorEl) errorEl.classList.remove('hidden');
-        if (input) {
-            input.classList.add('error');
-            input.classList.add('animate-shake');
-            setTimeout(() => input.classList.remove('animate-shake'), 500);
-            input.focus();
-            input.select();
-        }
-    },
-    
-    // Navigate to page
-    navigate(page) {
-        // Cleanup previous page
-        if(this.currentPage==='logs')Logs.destroy();
-if(this.currentPage==='sessions')Sessions.destroy();
+async init(){
+if(this.initialized)return;
+console.log('[App] Initializing...');
+this.bindLoginEvents();
+const btn=document.getElementById('loginBtn');
+if(btn){
+btn.disabled=true;
+btn.textContent='Checking...';
+}
+const isAuth=await Auth.check();
+if(btn){
+btn.disabled=false;
+btn.textContent='🚀 Login';
+}
+if(isAuth){
+console.log('[App] Already authenticated');
+this.showDashboard();
+}else{
+console.log('[App] Not authenticated');
+this.showLogin();
+}
+this.initialized=true;
+},
+
+bindLoginEvents(){
+console.log('[App] Binding login events...');
+const btn=document.getElementById('loginBtn');
+const input=document.getElementById('adminKeyInput');
+if(btn){
+btn.onclick=(e)=>{
+e.preventDefault();
+console.log('[App] Login button clicked');
+this.handleLogin();
+};
+console.log('[App] Login button bound');
+}else{
+console.error('[App] Login button not found!');
+}
+if(input){
+input.onkeypress=(e)=>{
+if(e.key==='Enter'){
+e.preventDefault();
+console.log('[App] Enter pressed');
+this.handleLogin();
+}
+};
+console.log('[App] Input bound');
+}else{
+console.error('[App] Input not found!');
+}
+},
+
+async handleLogin(){
+console.log('[App] handleLogin called');
+const input=document.getElementById('adminKeyInput');
+const btn=document.getElementById('loginBtn');
+const errorEl=document.getElementById('loginError');
+const errorText=document.getElementById('loginErrorText');
+if(!input||!btn){
+console.error('[App] Elements not found');
+alert('Error: Form elements not found');
+return;
+}
+const key=input.value;
+console.log('[App] Key length:',key.length);
+if(!key||key.trim().length===0){
+if(errorText)errorText.textContent='Masukkan admin key';
+if(errorEl)errorEl.classList.remove('hidden');
+input.focus();
+return;
+}
+if(errorEl)errorEl.classList.add('hidden');
+btn.disabled=true;
+btn.textContent='⏳ Verifying...';
+console.log('[App] Calling Auth.login...');
+try{
+const result=await Auth.login(key);
+console.log('[App] Login result:',result);
+if(result.success){
+btn.textContent='✅ Success!';
+setTimeout(()=>{
+this.showDashboard();
+btn.textContent='🚀 Login';
+btn.disabled=false;
+},500);
+}else{
+if(errorText)errorText.textContent=result.error||'Login failed';
+if(errorEl)errorEl.classList.remove('hidden');
+btn.textContent='🚀 Login';
+btn.disabled=false;
+input.focus();
+input.select();
+}
+}catch(err){
+console.error('[App] Login error:',err);
+if(errorText)errorText.textContent='Error: '+err.message;
+if(errorEl)errorEl.classList.remove('hidden');
+btn.textContent='🚀 Login';
+btn.disabled=false;
+}
+},
+
+showLogin(){
+console.log('[App] Showing login');
+const login=document.getElementById('loginScreen');
+const dash=document.getElementById('dashboardScreen');
+if(login)login.classList.remove('hidden');
+if(dash)dash.classList.add('hidden');
+setTimeout(()=>{
+const input=document.getElementById('adminKeyInput');
+if(input)input.focus();
+},100);
+},
+
+showDashboard(){
+console.log('[App] Showing dashboard');
+const login=document.getElementById('loginScreen');
+const dash=document.getElementById('dashboardScreen');
+if(login)login.classList.add('hidden');
+if(dash)dash.classList.remove('hidden');
+this.bindNavEvents();
+this.navigate('dashboard');
+},
+
+bindNavEvents(){
+document.querySelectorAll('.nav-item[data-page]').forEach(item=>{
+item.onclick=()=>{
+const page=item.dataset.page;
+if(page)this.navigate(page);
+};
+});
+},
+
+navigate(page){
+console.log('[App] Navigate to:',page);
 this.currentPage=page;
-const pageNameEl=document.getElementById('currentPageName');
-if(pageNameEl){const names={dashboard:'Dashboard',bans:'Ban Management',logs:'Activity Logs',settings:'Settings',whitelist:'Whitelist',sessions:'Active Sessions',suspended:'Suspended Users'};pageNameEl.textContent=names[page]||'Dashboard'}
-document.querySelectorAll('.nav-item').forEach(item=>{item.classList.remove('active');if(item.dataset.page===page)item.classList.add('active')});
+document.querySelectorAll('.nav-item').forEach(item=>{
+item.classList.remove('active');
+if(item.dataset.page===page)item.classList.add('active');
+});
 const content=document.getElementById('pageContent');
 if(!content)return;
-content.innerHTML=`<div class="empty-state"><div class="spinner spinner-lg"></div></div>`;
-setTimeout(()=>{switch(page){case'dashboard':content.innerHTML=Dashboard.render();Dashboard.init();Dashboard.loadRecentActivity();break;case'bans':content.innerHTML=Bans.render();Bans.init();break;case'logs':content.innerHTML=Logs.render();Logs.init();break;case'whitelist':content.innerHTML=Whitelist.render();Whitelist.init();break;case'sessions':content.innerHTML=Sessions.render();Sessions.init();break;case'suspended':content.innerHTML=Suspended.render();Suspended.init();break;case'settings':content.innerHTML=this.renderSettings();break;default:content.innerHTML=Dashboard.render();Dashboard.init()}},100);
-content.scrollTop=0;
-const sidebar=document.getElementById('sidebar');
-if(sidebar&&window.innerWidth<=1024)sidebar.classList.remove('open');
-        }
-        
-        this.currentPage = page;
-        
-        // Update page name in header
-        const pageNameEl = document.getElementById('currentPageName');
-        if (pageNameEl) {
-            const names = {
-                dashboard: 'Dashboard',
-                bans: 'Ban Management',
-                logs: 'Activity Logs',
-                settings: 'Settings'
-            };
-            pageNameEl.textContent = names[page] || 'Dashboard';
-        }
-        
-        // Update sidebar active state
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-            if (item.dataset.page === page) {
-                item.classList.add('active');
-            }
-        });
-        
-        // Render page content
-        const content = document.getElementById('pageContent');
-        if (!content) return;
-        
-        // Show loading
-        content.innerHTML = `
-            <div class="empty-state">
-                <div class="spinner spinner-lg"></div>
-                <p class="text-muted" style="margin-top: var(--space-4);">Loading...</p>
-            </div>
-        `;
-        
-        // Render page after brief delay (for animation)
-        setTimeout(() => {
-            switch (page) {
-                case 'dashboard':
-                    content.innerHTML = Dashboard.render();
-                    Dashboard.init();
-                    Dashboard.loadRecentActivity();
-                    break;
-                case 'bans':
-                    content.innerHTML = Bans.render();
-                    Bans.init();
-                    break;
-                case 'logs':
-                    content.innerHTML = Logs.render();
-                    Logs.init();
-                    break;
-                case 'settings':
-                    content.innerHTML = this.renderSettings();
-                    break;
-                case'whitelist':
-                    content.innerHTML=Whitelist.render();
-                    Whitelist.init();
-                    break;
-                default:
-                    content.innerHTML = Dashboard.render();
-                    Dashboard.init();
-            }
-        }, 100);
-        
-        // Scroll to top
-        content.scrollTop = 0;
-    },
-    
-    // Render settings page
-    renderSettings() {
-        return `
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">Settings</h1>
-                    <p class="page-subtitle">Configure your admin dashboard</p>
-                </div>
-            </div>
-            
-            <div class="content-grid">
-                <div class="card animate-fadeInUp">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <span class="card-title-icon">🔑</span>
-                            Authentication
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label class="form-label">Current Admin Key</label>
-                            <div class="input-with-button">
-                                <input type="text" class="form-input" value="${Auth.getMaskedKey()}" readonly>
-                                <button class="btn btn-danger" onclick="Auth.logout()">Logout</button>
-                            </div>
-                            <p class="form-help">Key tersimpan di browser local storage</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card animate-fadeInUp">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <span class="card-title-icon">📋</span>
-                            Loader Script
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label class="form-label">Copy this to your executor:</label>
-                            <div class="code-block">
-                                <pre><code>loadstring(game:HttpGet("${CONFIG.API_BASE}/loader"))()</code></pre>
-                                <button class="btn btn-primary btn-sm copy-code-btn" onclick="Dashboard.copyLoader()">
-                                    📋 Copy
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card animate-fadeInUp">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <span class="card-title-icon">ℹ️</span>
-                            System Info
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="info-list">
-                            <div class="info-item">
-                                <span class="info-label">Server URL</span>
-                                <span class="info-value">${CONFIG.API_BASE}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Version</span>
-                                <span class="info-value">1.0.0</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Status</span>
-                                <span class="badge badge-success">● Online</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    },
-    
-    // Toggle sidebar (mobile)
-    toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar) {
-            sidebar.classList.toggle('open');
-        }
-    },
-    
-    // Bind global events
-    bindGlobalEvents() {
-        // Login form enter key
-        const loginInput = document.getElementById('adminKeyInput');
-        if (loginInput) {
-            loginInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    this.login();
-                }
-            });
-        }
-        
-        // Login button click
-        const loginBtn = document.getElementById('loginBtn');
-        if (loginBtn) {
-            loginBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.login();
-            });
-        }
-        
-        // Close modals on escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
-                    modal.classList.remove('active');
-                });
-            }
-        });
-        
-        // Close modals on overlay click
-        document.querySelectorAll('.modal-overlay').forEach(overlay => {
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    overlay.classList.remove('active');
-                }
-            });
-        });
-        
-        // Navigation items
-        document.querySelectorAll('.nav-item[data-page]').forEach(item => {
-            item.addEventListener('click', () => {
-                const page = item.dataset.page;
-                if (page) this.navigate(page);
-                
-                // Close sidebar on mobile
-                const sidebar = document.getElementById('sidebar');
-                if (sidebar && window.innerWidth <= 1024) {
-                    sidebar.classList.remove('open');
-                }
-            });
-        });
-    },
+content.innerHTML='<div style="text-align:center;padding:40px"><div class="spinner"></div></div>';
+setTimeout(()=>{
+try{
+switch(page){
+case'dashboard':
+if(typeof Dashboard!=='undefined'){content.innerHTML=Dashboard.render();Dashboard.init()}
+break;
+case'bans':
+if(typeof Bans!=='undefined'){content.innerHTML=Bans.render();Bans.init()}
+break;
+case'logs':
+if(typeof Logs!=='undefined'){content.innerHTML=Logs.render();Logs.init()}
+break;
+case'whitelist':
+if(typeof Whitelist!=='undefined'){content.innerHTML=Whitelist.render();Whitelist.init()}
+break;
+case'sessions':
+if(typeof Sessions!=='undefined'){content.innerHTML=Sessions.render();Sessions.init()}
+break;
+case'suspended':
+if(typeof Suspended!=='undefined'){content.innerHTML=Suspended.render();Suspended.init()}
+break;
+case'settings':
+content.innerHTML=this.renderSettings();
+break;
+default:
+if(typeof Dashboard!=='undefined'){content.innerHTML=Dashboard.render();Dashboard.init()}
+}
+}catch(err){
+console.error('[App] Render error:',err);
+content.innerHTML='<div style="color:red;padding:20px">Error: '+err.message+'</div>';
+}
+},100);
+},
+
+renderSettings(){
+return`<div class="page-header"><div><h1 class="page-title">Settings</h1></div></div>
+<div class="card"><div class="card-header"><h3 class="card-title">🔑 Authentication</h3></div>
+<div class="card-body">
+<p>Admin Key: <code>${API.getKey().substring(0,4)}****</code></p>
+<button class="btn btn-danger" onclick="Auth.logout()">Logout</button>
+</div></div>
+<div class="card" style="margin-top:20px"><div class="card-header"><h3 class="card-title">📋 Loader Script</h3></div>
+<div class="card-body">
+<pre style="background:#1a1a2e;padding:15px;border-radius:8px;overflow-x:auto"><code>loadstring(game:HttpGet("${window.location.origin}/loader"))()</code></pre>
+<button class="btn btn-primary" style="margin-top:10px" onclick="navigator.clipboard.writeText('loadstring(game:HttpGet(&quot;${window.location.origin}/loader&quot;))()');alert('Copied!')">📋 Copy</button>
+</div></div>`;
+}
 };
 
-// Initialize app when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('[App] DOM loaded, initializing...');
-    App.init();
+document.addEventListener('DOMContentLoaded',()=>{
+console.log('[App] DOM Ready');
+App.init();
 });
 
-// Also handle if DOM already loaded
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    console.log('[App] DOM already ready, initializing...');
-    setTimeout(() => App.init(), 1);
+if(document.readyState==='complete'||document.readyState==='interactive'){
+console.log('[App] DOM Already Ready');
+setTimeout(()=>App.init(),10);
 }
