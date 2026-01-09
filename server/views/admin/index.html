@@ -123,7 +123,7 @@ code{font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-rad
 <!-- Login Screen -->
 <div id="loginScreen" class="login-wrap">
     <div class="card login-card">
-        <div style="font-size:40px;margin-bottom:16px">🛡️</div>
+        <div style="font-size:40px;margin-bottom:16px">ðŸ›¡ï¸</div>
         <h2 style="margin-bottom:8px">Admin Access</h2>
         <p style="margin-bottom:24px">Enter security key to continue</p>
         <div id="loginError" class="badge badge-danger hidden" style="margin-bottom:16px;display:none">Invalid Key</div>
@@ -138,7 +138,7 @@ code{font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-rad
     
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo-icon">🛡️</div>
+            <div class="logo-icon">ðŸ›¡ï¸</div>
             <div class="logo-text">Shield</div>
         </div>
         
@@ -199,7 +199,7 @@ code{font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-rad
     <div class="modal">
         <div class="modal-header">
             <h3 class="modal-title" id="modalTitle">Title</h3>
-            <button class="btn btn-secondary btn-sm" onclick="App.closeModal()">✕</button>
+            <button class="btn btn-secondary btn-sm" onclick="App.closeModal()">âœ•</button>
         </div>
         <div class="modal-body" id="modalBody"></div>
         <div class="modal-footer" id="modalFooter"></div>
@@ -235,7 +235,7 @@ const Utils={
     esc(s){if(!s)return'';return s.toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")},
     trunc(s,l=15){
         if(!s) return '-';
-        return `<span class="text-trunc" title="${s}">${s}</span>`; // Wraps in span for CSS ellipsis
+        return `<span class="text-trunc" title="${s}">${s}</span>`;
     }
 };
 
@@ -263,7 +263,7 @@ const Auth={
         if(ok){
             App.showDash();
         }else{
-            document.getElementById('loginError').style.display='block'; // Fixed display:block
+            document.getElementById('loginError').style.display='block';
             btn.disabled=false;btn.innerHTML='Verify Access';
         }
     },
@@ -272,7 +272,6 @@ const Auth={
 
 const Dashboard={
     async render(){
-        // Loading state handled by App.nav
         try {
             const r=await API.get('/api/admin/stats');
             if(!r.success) throw new Error("Failed to load stats");
@@ -306,13 +305,21 @@ const Dashboard={
             return `<div style="text-align:center;padding:40px;color:var(--danger)">Error loading dashboard: ${e.message}<br><button class="btn btn-secondary" onclick="location.reload()">Retry</button></div>`;
         }
     },
-    async init(){
-        const r=await API.get('/api/admin/logs',{limit:5});
-        document.getElementById('recentLogs').innerHTML=(r.logs||[]).map(l=>`
-            <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:8px 0;font-size:13px">
-                <div><span style="color:${l.success?'var(--success)':'var(--danger)'}">●</span> ${Utils.esc(l.action)}</div>
-                <div style="color:#666">${Utils.trunc(l.ip,12)}</div>
-            </div>`).join('')||'<p style="text-align:center">No activity</p>';
+    async postRender(){
+        // This runs AFTER HTML is inserted into DOM
+        try {
+            const r=await API.get('/api/admin/logs',{limit:5});
+            const logsEl = document.getElementById('recentLogs');
+            if(logsEl) {
+                logsEl.innerHTML=(r.logs||[]).map(l=>`
+                    <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:8px 0;font-size:13px">
+                        <div><span style="color:${l.success?'var(--success)':'var(--danger)'}">●</span> ${Utils.esc(l.action)}</div>
+                        <div style="color:#666">${Utils.trunc(l.ip,12)}</div>
+                    </div>`).join('')||'<p style="text-align:center">No activity</p>';
+            }
+        } catch (e) {
+            console.error("Failed to load logs:", e);
+        }
     },
     async clearCache(){if(confirm('Clear cache?')){await API.post('/api/admin/cache/clear');Utils.toast('Cache cleared','success')}}
 };
@@ -390,7 +397,7 @@ const Bans={
         const v=document.getElementById('banVal').value;
         const r=document.getElementById('banRes').value;
         if(!v)return;
-        await API.post('/api/admin/bans',{hwid:v,reason:r}); // Simplified for UX, backend handles identification
+        await API.post('/api/admin/bans',{hwid:v,reason:r});
         App.closeModal();App.nav('bans');
     }
 };
@@ -538,7 +545,7 @@ const App={
         
         let html='';
         try {
-            if(page==='dashboard') { html=await Dashboard.render(); await Dashboard.init(); }
+            if(page==='dashboard') { html=await Dashboard.render(); }
             else if(page==='sessions') html=await Sessions.render();
             else if(page==='bans') html=await Bans.render();
             else if(page==='suspended') html=await Suspended.render();
@@ -550,6 +557,9 @@ const App={
         }
         
         c.innerHTML=html;
+
+        // Post-render init (fix for dashboard chart/logs)
+        if(page==='dashboard' && Dashboard.postRender) await Dashboard.postRender();
     },
     openModal(title, body, footer){
         document.getElementById('modalTitle').innerText=title;
