@@ -146,17 +146,82 @@ app.post('/api/admin/cache/clear',adminAuth,async(req,res)=>{await db.setCachedS
 app.post('/api/admin/sessions/clear',adminAuth,async(req,res)=>{const count=SESSIONS.size;SESSIONS.clear();res.json({success:true,cleared:count})});
 
 // === ADMIN WHITELIST ===
-app.get('/api/admin/whitelist',adminAuth,async(req,res)=>{res.json({success:true,whitelist:{userIds:[...(config.WHITELIST_USER_IDS||[]),...dynamicWhitelist.userIds],hwids:[...(config.WHITELIST_HWIDS||[]),...dynamicWhitelist.hwids],owners:config.OWNER_USER_IDS||[]}})});
-app.post('/api/admin/whitelist',adminAuth,async(req,res)=>{const{type,value}=req.body;if(!type||!value)return res.status(400).json({success:false,error:'Missing fields'});if(type==='userId'){dynamicWhitelist.userIds.add(parseInt(value));res.json({success:true,msg:`Added userId ${value}`})}else if(type==='hwid'){dynamicWhitelist.hwids.add(value);res.json({success:true,msg:`Added hwid ${value}`})}else{res.status(400).json({success:false,error:'Invalid type'})}});
-app.delete('/api/admin/whitelist',adminAuth,async(req,res)=>{const{type,value}=req.body;if(type==='userId')dynamicWhitelist.userIds.delete(parseInt(value));else if(type==='hwid')dynamicWhitelist.hwids.delete(value);res.json({success:true})});
+app.get('/api/admin/whitelist',adminAuth,async(req,res)=>{
+res.json({success:true,whitelist:{
+userIds:[...(config.WHITELIST_USER_IDS||[]),...Array.from(dynamicWhitelist.userIds)],
+hwids:[...(config.WHITELIST_HWIDS||[]),...Array.from(dynamicWhitelist.hwids)],
+owners:config.OWNER_USER_IDS||[]
+}});
+});
 
-// === ADMIN SUSPEND (Kill Switch) ===
-app.get('/api/admin/suspended',adminAuth,async(req,res)=>{const all=[];suspendedUsers.hwids.forEach((v,k)=>all.push({type:'hwid',value:k,...v}));suspendedUsers.userIds.forEach((v,k)=>all.push({type:'userId',value:k,...v}));suspendedUsers.sessions.forEach((v,k)=>all.push({type:'session',value:k,...v}));res.json({success:true,suspended:all})});
-app.post('/api/admin/suspend',adminAuth,async(req,res)=>{const{type,value,reason,duration}=req.body;if(!type||!value)return res.status(400).json({success:false,error:'Missing type or value'});if(!['hwid','userId','session'].includes(type))return res.status(400).json({success:false,error:'Invalid type'});await suspendUser(type,value,{reason:reason||'Suspended by admin',duration:duration||null,suspendedBy:'admin'});res.json({success:true,msg:`Suspended ${type}: ${value}`+(duration?` for ${duration}s`:' permanently')})});
-app.post('/api/admin/unsuspend',adminAuth,async(req,res)=>{const{type,value}=req.body;if(!type||!value)return res.status(400).json({success:false,error:'Missing fields'});await unsuspendUser(type,value);res.json({success:true,msg:`Unsuspended ${type}: ${value}`})});
-app.post('/api/admin/kill-session',adminAuth,async(req,res)=>{const{sessionId,reason}=req.body;if(!sessionId)return res.status(400).json({success:false,error:'Missing sessionId'});const session=SESSIONS.get(sessionId);if(!session)return res.status(404).json({success:false,error:'Session not found'});await suspendUser('session',sessionId,{reason:reason||'Killed by admin',userId:session.userId,hwid:session.hwid,ip:session.ip});res.json({success:true,msg:'Session will be terminated on next heartbeat'})});
-app.get('/api/admin/sessions',adminAuth,async(req,res)=>{const sessions=[];SESSIONS.forEach((v,k)=>sessions.push({sessionId:k,...v,age:Math.floor((Date.now()-v.created)/1000)}));res.json({success:true,sessions:sessions.sort((a,b)=>b.created-a.created)})});
+app.post('/api/admin/whitelist',adminAuth,async(req,res)=>{
+const{type,value}=req.body;
+if(!type||!value)return res.status(400).json({success:false,error:'Missing fields'});
+if(type==='userId'){dynamicWhitelist.userIds.add(parseInt(value))}
+else if(type==='hwid'){dynamicWhitelist.hwids.add(String(value))}
+else{return res.status(400).json({success:false,error:'Invalid type'})}
+res.json({success:true,msg:`Added ${type}: ${value}`});
+});
 
+app.post('/api/admin/whitelist/remove',adminAuth,async(req,res)=>{
+const{type,value}=req.body;
+if(!type||!value)return res.status(400).json({success:false,error:'Missing fields'});
+if(type==='userId'){dynamicWhitelist.userIds.delete(parseInt(value))}
+else if(type==='hwid'){dynamicWhitelist.hwids.delete(String(value))}
+res.json({success:true,msg:`Removed ${type}: ${value}`});
+});
+
+// === ADMIN SUSPEND ===
+app.get('/api/admin/suspended',adminAuth,async(req,res)=>{
+const all=[];
+suspendedUsers.hwids.forEach((v,k)=>all.push({type:'hwid',value:k,...v}));
+suspendedUsers.userIds.forEach((v,k)=>all.push({type:'userId',value:k,...v}));
+suspendedUsers.sessions.forEach((v,k)=>all.push({type:'session',value:k,...v}));
+res.json({success:true,suspended:all});
+});
+
+app.post('/api/admin/suspend',adminAuth,async(req,res)=>{
+const{type,value,reason,duration}=req.body;
+if(!type||!value)return res.status(400).json({success:false,error:'Missing type or value'});
+if(!['hwid','userId','session'].includes(type))return res.status(400).json({success:false,error:'Invalid type'});
+const data={
+reason:reason||'Suspended by admin',
+expiresAt:duration?new Date(Date.now()+parseInt(duration)*1000).toISOString():null,
+suspendedAt:new Date().toISOString()
+};
+if(type==='hwid')suspendedUsers.hwids.set(String(value),data);
+else if(type==='userId')suspendedUsers.userIds.set(String(value),data);
+else if(type==='session')suspendedUsers.sessions.set(String(value),data);
+await db.addSuspend(type,String(value),data);
+res.json({success:true,msg:`Suspended ${type}: ${value}${duration?' for '+duration+'s':' permanently'}`});
+});
+
+app.post('/api/admin/unsuspend',adminAuth,async(req,res)=>{
+const{type,value}=req.body;
+if(!type||!value)return res.status(400).json({success:false,error:'Missing fields'});
+if(type==='hwid')suspendedUsers.hwids.delete(String(value));
+else if(type==='userId')suspendedUsers.userIds.delete(String(value));
+else if(type==='session')suspendedUsers.sessions.delete(String(value));
+await db.removeSuspend(type,String(value));
+res.json({success:true,msg:`Unsuspended ${type}: ${value}`});
+});
+
+app.post('/api/admin/kill-session',adminAuth,async(req,res)=>{
+const{sessionId,reason}=req.body;
+if(!sessionId)return res.status(400).json({success:false,error:'Missing sessionId'});
+const session=SESSIONS.get(sessionId);
+if(!session)return res.status(404).json({success:false,error:'Session not found'});
+const data={reason:reason||'Killed by admin',suspendedAt:new Date().toISOString(),expiresAt:null};
+suspendedUsers.sessions.set(sessionId,data);
+await db.addSuspend('session',sessionId,data);
+res.json({success:true,msg:'Session will be terminated'});
+});
+
+app.get('/api/admin/sessions',adminAuth,async(req,res)=>{
+const sessions=[];
+SESSIONS.forEach((v,k)=>sessions.push({sessionId:k,...v,age:Math.floor((Date.now()-v.created)/1000)}));
+res.json({success:true,sessions:sessions.sort((a,b)=>b.created-a.created)});
+});
 // === 404 ===
 app.use('*',(req,res)=>{const ct=getClientType(req);if(ct==='browser')return res.status(404).type('html').send(TRAP_HTML);if(shouldBlock(req))return res.status(403).type('text/plain').send(genFakeScript());res.status(404).json({error:'Not found'})});
 
