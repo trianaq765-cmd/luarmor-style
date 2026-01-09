@@ -405,40 +405,44 @@
             
             <nav class="sidebar-nav">
                 <div class="nav-section">
-                    <div class="nav-section-title">Main</div>
-                    <div class="nav-item active" data-page="dashboard">
-                        <span class="nav-item-icon">📊</span>
-                        <span class="nav-item-text">Dashboard</span>
-                    </div>
-                    <div class="nav-item" data-page="bans">
-                        <span class="nav-item-icon">🚫</span>
-                        <span class="nav-item-text">Ban Management</span>
-                    </div>
-                    <div class="nav-item" data-page="logs">
-                        <span class="nav-item-icon">📋</span>
-                        <span class="nav-item-text">Activity Logs</span>
-                    </div> 
-                    <div class="nav-item" data-page="whitelist">
-                        <span class="nav-item-icon">⭐</span>
-                        <span class="nav-item-text">Whitelist</span>
-                    </div>
-                </div>
-                
-                <div class="nav-section">
-                    <div class="nav-section-title">System</div>
-                    <div class="nav-item" data-page="settings">
-                        <span class="nav-item-icon">⚙️</span>
-                        <span class="nav-item-text">Settings</span>
-                    </div>
-                </div>
-            </nav>
-            
-            <div class="sidebar-footer">
-                <div class="nav-item" onclick="Auth.logout()">
-                    <span class="nav-item-icon">🚪</span>
-                    <span class="nav-item-text">Logout</span>
-                </div>
-            </div>
+    <div class="nav-section-title">Main</div>
+    <div class="nav-item active" data-page="dashboard">
+        <span class="nav-item-icon">📊</span>
+        <span class="nav-item-text">Dashboard</span>
+    </div>
+    <div class="nav-item" data-page="sessions">
+        <span class="nav-item-icon">👥</span>
+        <span class="nav-item-text">Sessions</span>
+    </div>
+    <div class="nav-item" data-page="bans">
+        <span class="nav-item-icon">🚫</span>
+        <span class="nav-item-text">Bans</span>
+    </div>
+    <div class="nav-item" data-page="suspended">
+        <span class="nav-item-icon">⏸️</span>
+        <span class="nav-item-text">Suspended</span>
+    </div>
+    <div class="nav-item" data-page="logs">
+        <span class="nav-item-icon">📋</span>
+        <span class="nav-item-text">Logs</span>
+    </div>
+</div>
+
+<div class="nav-section">
+    <div class="nav-section-title">Access Control</div>
+    <div class="nav-item" data-page="whitelist">
+        <span class="nav-item-icon">⭐</span>
+        <span class="nav-item-text">Whitelist</span>
+    </div>
+</div>
+
+<div class="nav-section">
+    <div class="nav-section-title">System</div>
+    <div class="nav-item" data-page="settings">
+        <span class="nav-item-icon">⚙️</span>
+        <span class="nav-item-text">Settings</span>
+    </div>
+</div>
         </aside>
         <div class="sidebar-overlay" onclick="App.toggleSidebar()"></div>
         
