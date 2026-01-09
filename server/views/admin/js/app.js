@@ -160,8 +160,19 @@ const App = {
     // Navigate to page
     navigate(page) {
         // Cleanup previous page
-        if (this.currentPage === 'logs') {
-            Logs.destroy();
+        if(this.currentPage==='logs')Logs.destroy();
+if(this.currentPage==='sessions')Sessions.destroy();
+this.currentPage=page;
+const pageNameEl=document.getElementById('currentPageName');
+if(pageNameEl){const names={dashboard:'Dashboard',bans:'Ban Management',logs:'Activity Logs',settings:'Settings',whitelist:'Whitelist',sessions:'Active Sessions',suspended:'Suspended Users'};pageNameEl.textContent=names[page]||'Dashboard'}
+document.querySelectorAll('.nav-item').forEach(item=>{item.classList.remove('active');if(item.dataset.page===page)item.classList.add('active')});
+const content=document.getElementById('pageContent');
+if(!content)return;
+content.innerHTML=`<div class="empty-state"><div class="spinner spinner-lg"></div></div>`;
+setTimeout(()=>{switch(page){case'dashboard':content.innerHTML=Dashboard.render();Dashboard.init();Dashboard.loadRecentActivity();break;case'bans':content.innerHTML=Bans.render();Bans.init();break;case'logs':content.innerHTML=Logs.render();Logs.init();break;case'whitelist':content.innerHTML=Whitelist.render();Whitelist.init();break;case'sessions':content.innerHTML=Sessions.render();Sessions.init();break;case'suspended':content.innerHTML=Suspended.render();Suspended.init();break;case'settings':content.innerHTML=this.renderSettings();break;default:content.innerHTML=Dashboard.render();Dashboard.init()}},100);
+content.scrollTop=0;
+const sidebar=document.getElementById('sidebar');
+if(sidebar&&window.innerWidth<=1024)sidebar.classList.remove('open');
         }
         
         this.currentPage = page;
