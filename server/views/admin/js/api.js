@@ -1,8 +1,11 @@
 /* ============================================
-   API - HTTP Request Handler
+   API - HTTP Request Handler (FIXED)
    ============================================ */
 
 const API = {
+    // Request timeout (ms)
+    TIMEOUT: 10000,
+    
     // Get stored admin key
     getKey() {
         return localStorage.getItem(CONFIG.STORAGE.ADMIN_KEY) || '';
@@ -18,6 +21,27 @@ const API = {
         localStorage.removeItem(CONFIG.STORAGE.ADMIN_KEY);
     },
     
+    // Fetch with timeout
+    async fetchWithTimeout(url, options = {}) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
+        
+        try {
+            const response = await fetch(url, {
+                ...options,
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            return response;
+        } catch (error) {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                throw new Error('Request timeout - server tidak merespons');
+            }
+            throw error;
+        }
+    },
+    
     // Base fetch wrapper
     async request(endpoint, options = {}) {
         const url = CONFIG.API_BASE + endpoint;
@@ -25,8 +49,12 @@ const API = {
         
         const defaultHeaders = {
             'Content-Type': 'application/json',
-            'x-admin-key': key,
         };
+        
+        // Only add admin key if exists
+        if (key) {
+            defaultHeaders['x-admin-key'] = key;
+        }
         
         const config = {
             ...options,
@@ -36,24 +64,69 @@ const API = {
             },
         };
         
+        console.log(`[API] ${options.method || 'GET'} ${endpoint}`);
+        
         try {
-            const response = await fetch(url, config);
-            const data = await response.json();
+            const response = await this.fetchWithTimeout(url, config);
             
-            // Handle unauthorized
-            if (response.status === 403) {
-                if (data.error === 'Unauthorized') {
-                    Auth.logout();
-                    return { success: false, error: 'Session expired' };
+            // Try to parse JSON
+            let data;
+            const contentType = response.headers.get('content-type');
+            
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                const text = await response.text();
+                console.warn('[API] Non-JSON response:', text.substring(0, 100));
+                data = { success: false, error: 'Invalid server response' };
+            }
+            
+            console.log(`[API] Response:`, data);
+            
+            // Handle HTTP errors
+            if (!response.ok) {
+                if (response.status === 403) {
+                    if (data.error === 'Unauthorized') {
+                        return { 
+                            success: false, 
+                            error: 'Invalid admin key',
+                            code: 'UNAUTHORIZED'
+                        };
+                    }
                 }
+                return { 
+                    success: false, 
+                    error: data.error || `HTTP Error ${response.status}`,
+                    code: 'HTTP_ERROR'
+                };
             }
             
             return data;
+            
         } catch (error) {
-            console.error('API Error:', error);
+            console.error('[API] Error:', error);
+            
+            // Network errors
+            if (error.message.includes('timeout')) {
+                return { 
+                    success: false, 
+                    error: 'Server timeout - coba lagi',
+                    code: 'TIMEOUT'
+                };
+            }
+            
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                return { 
+                    success: false, 
+                    error: 'Tidak dapat terhubung ke server',
+                    code: 'NETWORK_ERROR'
+                };
+            }
+            
             return { 
                 success: false, 
-                error: 'Network error. Please try again.' 
+                error: error.message || 'Unknown error',
+                code: 'UNKNOWN'
             };
         }
     },
@@ -79,6 +152,25 @@ const API = {
     },
     
     // ===== Specific API Methods =====
+    
+    // Verify admin key (quick check)
+    async verifyKey(key) {
+        const originalKey = this.getKey();
+        this.setKey(key);
+        
+        const result = await this.get(CONFIG.ENDPOINTS.STATS);
+        
+        if (!result.success) {
+            // Restore original key if failed
+            if (originalKey) {
+                this.setKey(originalKey);
+            } else {
+                this.clearKey();
+            }
+        }
+        
+        return result;
+    },
     
     // Stats
     async getStats() {
