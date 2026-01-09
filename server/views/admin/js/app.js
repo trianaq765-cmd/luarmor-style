@@ -1,5 +1,5 @@
 /* ============================================
-   APP - Main Application Controller
+   APP - Main Application Controller (FIXED)
    ============================================ */
 
 const App = {
@@ -10,12 +10,19 @@ const App = {
     async init() {
         if (this.initialized) return;
         
+        console.log('[App] Initializing...');
+        
+        // Show loading state
+        this.showLoadingState();
+        
         // Check authentication
         const isAuth = await Auth.check();
         
         if (isAuth) {
+            console.log('[App] User authenticated, showing dashboard');
             this.showDashboard();
         } else {
+            console.log('[App] User not authenticated, showing login');
             this.showLogin();
         }
         
@@ -23,18 +30,43 @@ const App = {
         this.initialized = true;
     },
     
+    // Show loading state
+    showLoadingState() {
+        const loginScreen = document.getElementById('loginScreen');
+        const loginBtn = document.getElementById('loginBtn');
+        
+        if (loginBtn) {
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="spinner spinner-sm"></span> Checking...';
+        }
+    },
+    
     // Show login screen
     showLogin() {
         const loginScreen = document.getElementById('loginScreen');
         const dashboardScreen = document.getElementById('dashboardScreen');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
         
         if (loginScreen) loginScreen.classList.remove('hidden');
         if (dashboardScreen) dashboardScreen.classList.add('hidden');
         
+        // Reset login button
+        if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = '🚀 Login';
+        }
+        
+        // Hide error
+        if (loginError) loginError.classList.add('hidden');
+        
         // Focus on input
         setTimeout(() => {
             const input = document.getElementById('adminKeyInput');
-            if (input) input.focus();
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
         }, 100);
     },
     
@@ -55,42 +87,73 @@ const App = {
         const input = document.getElementById('adminKeyInput');
         const btn = document.getElementById('loginBtn');
         const errorEl = document.getElementById('loginError');
+        const errorText = document.getElementById('loginErrorText');
         
-        if (!input || !btn) return;
+        if (!input || !btn) {
+            console.error('[App] Login elements not found');
+            return;
+        }
         
-        const key = input.value.trim();
+        const key = input.value;
         
-        if (!key) {
-            if (errorEl) {
-                errorEl.textContent = 'Please enter your admin key';
-                errorEl.classList.remove('hidden');
-            }
-            input.classList.add('error');
+        // Clear previous error
+        if (errorEl) errorEl.classList.add('hidden');
+        input.classList.remove('error');
+        
+        // Validate
+        if (!key || key.trim().length === 0) {
+            this.showLoginError('Masukkan admin key', input, errorEl, errorText);
             return;
         }
         
         // Loading state
-        Utils.setLoading(btn, true);
-        btn.innerHTML = '<span class="spinner spinner-sm"></span> Logging in...';
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner spinner-sm"></span> Verifying...';
         
-        const result = await Auth.login(key);
+        console.log('[App] Starting login...');
         
-        Utils.setLoading(btn, false);
-        btn.innerHTML = '🚀 Login';
-        
-        if (result.success) {
-            input.classList.remove('error');
-            if (errorEl) errorEl.classList.add('hidden');
-            this.showDashboard();
-            Utils.toast('Welcome back!', 'success');
-        } else {
-            if (errorEl) {
-                errorEl.textContent = result.error || 'Invalid admin key';
-                errorEl.classList.remove('hidden');
+        try {
+            const result = await Auth.login(key);
+            
+            if (result.success) {
+                // Success
+                btn.innerHTML = '✓ Success!';
+                btn.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    this.showDashboard();
+                    Utils.toast('Welcome to Script Shield!', 'success');
+                    
+                    // Reset button for next time
+                    btn.classList.remove('btn-success');
+                    btn.innerHTML = '🚀 Login';
+                    btn.disabled = false;
+                }, 500);
+                
+            } else {
+                // Failed
+                this.showLoginError(result.error || 'Invalid admin key', input, errorEl, errorText);
+                btn.disabled = false;
+                btn.innerHTML = '🚀 Login';
             }
+        } catch (err) {
+            console.error('[App] Login error:', err);
+            this.showLoginError('Terjadi kesalahan: ' + err.message, input, errorEl, errorText);
+            btn.disabled = false;
+            btn.innerHTML = '🚀 Login';
+        }
+    },
+    
+    // Show login error
+    showLoginError(message, input, errorEl, errorText) {
+        if (errorText) errorText.textContent = message;
+        if (errorEl) errorEl.classList.remove('hidden');
+        if (input) {
             input.classList.add('error');
             input.classList.add('animate-shake');
             setTimeout(() => input.classList.remove('animate-shake'), 500);
+            input.focus();
+            input.select();
         }
     },
     
@@ -102,6 +165,18 @@ const App = {
         }
         
         this.currentPage = page;
+        
+        // Update page name in header
+        const pageNameEl = document.getElementById('currentPageName');
+        if (pageNameEl) {
+            const names = {
+                dashboard: 'Dashboard',
+                bans: 'Ban Management',
+                logs: 'Activity Logs',
+                settings: 'Settings'
+            };
+            pageNameEl.textContent = names[page] || 'Dashboard';
+        }
         
         // Update sidebar active state
         document.querySelectorAll('.nav-item').forEach(item => {
@@ -115,27 +190,38 @@ const App = {
         const content = document.getElementById('pageContent');
         if (!content) return;
         
-        switch (page) {
-            case 'dashboard':
-                content.innerHTML = Dashboard.render();
-                Dashboard.init();
-                Dashboard.loadRecentActivity();
-                break;
-            case 'bans':
-                content.innerHTML = Bans.render();
-                Bans.init();
-                break;
-            case 'logs':
-                content.innerHTML = Logs.render();
-                Logs.init();
-                break;
-            case 'settings':
-                content.innerHTML = this.renderSettings();
-                break;
-            default:
-                content.innerHTML = Dashboard.render();
-                Dashboard.init();
-        }
+        // Show loading
+        content.innerHTML = `
+            <div class="empty-state">
+                <div class="spinner spinner-lg"></div>
+                <p class="text-muted" style="margin-top: var(--space-4);">Loading...</p>
+            </div>
+        `;
+        
+        // Render page after brief delay (for animation)
+        setTimeout(() => {
+            switch (page) {
+                case 'dashboard':
+                    content.innerHTML = Dashboard.render();
+                    Dashboard.init();
+                    Dashboard.loadRecentActivity();
+                    break;
+                case 'bans':
+                    content.innerHTML = Bans.render();
+                    Bans.init();
+                    break;
+                case 'logs':
+                    content.innerHTML = Logs.render();
+                    Logs.init();
+                    break;
+                case 'settings':
+                    content.innerHTML = this.renderSettings();
+                    break;
+                default:
+                    content.innerHTML = Dashboard.render();
+                    Dashboard.init();
+            }
+        }, 100);
         
         // Scroll to top
         content.scrollTop = 0;
@@ -164,9 +250,9 @@ const App = {
                             <label class="form-label">Current Admin Key</label>
                             <div class="input-with-button">
                                 <input type="text" class="form-input" value="${Auth.getMaskedKey()}" readonly>
-                                <button class="btn btn-secondary" onclick="Auth.logout()">Logout</button>
+                                <button class="btn btn-danger" onclick="Auth.logout()">Logout</button>
                             </div>
-                            <p class="form-help">Your admin key is stored locally in browser</p>
+                            <p class="form-help">Key tersimpan di browser local storage</p>
                         </div>
                     </div>
                 </div>
@@ -180,14 +266,13 @@ const App = {
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label class="form-label">Loader Code</label>
+                            <label class="form-label">Copy this to your executor:</label>
                             <div class="code-block">
                                 <pre><code>loadstring(game:HttpGet("${CONFIG.API_BASE}/loader"))()</code></pre>
                                 <button class="btn btn-primary btn-sm copy-code-btn" onclick="Dashboard.copyLoader()">
                                     📋 Copy
                                 </button>
                             </div>
-                            <p class="form-help">Use this in your Roblox executor to load your script</p>
                         </div>
                     </div>
                 </div>
@@ -207,11 +292,11 @@ const App = {
                             </div>
                             <div class="info-item">
                                 <span class="info-label">Version</span>
-                                <span class="info-value">v1.0.0</span>
+                                <span class="info-value">1.0.0</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">Status</span>
-                                <span class="badge badge-success">Online</span>
+                                <span class="badge badge-success">● Online</span>
                             </div>
                         </div>
                     </div>
@@ -235,8 +320,18 @@ const App = {
         if (loginInput) {
             loginInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
+                    e.preventDefault();
                     this.login();
                 }
+            });
+        }
+        
+        // Login button click
+        const loginBtn = document.getElementById('loginBtn');
+        if (loginBtn) {
+            loginBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.login();
             });
         }
         
@@ -263,6 +358,12 @@ const App = {
             item.addEventListener('click', () => {
                 const page = item.dataset.page;
                 if (page) this.navigate(page);
+                
+                // Close sidebar on mobile
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar && window.innerWidth <= 1024) {
+                    sidebar.classList.remove('open');
+                }
             });
         });
     },
@@ -270,5 +371,12 @@ const App = {
 
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('[App] DOM loaded, initializing...');
     App.init();
 });
+
+// Also handle if DOM already loaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    console.log('[App] DOM already ready, initializing...');
+    setTimeout(() => App.init(), 1);
+}
