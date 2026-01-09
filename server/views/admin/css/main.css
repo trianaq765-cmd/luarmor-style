@@ -1,0 +1,12 @@
+/* ============================================
+   MAIN CSS - Entry Point
+   Import all CSS modules
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@import 'variables.css';
+@import 'base.css';
+@import 'layout.css';
+@import 'components.css';
+@import 'animations.css';
