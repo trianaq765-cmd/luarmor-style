@@ -17,7 +17,16 @@ function genSessionKey(u,h,t,s){return hmac(`${u}:${h}:${t}`,s).substring(0,32)}
 
 // === CLIENT DETECTION ===
 function getClientType(req){const ua=(req.headers['user-agent']||'').toLowerCase(),headers=req.headers;const execScore=EXECUTOR_HEADERS.filter(h=>headers[h]).length;const browScore=BROWSER_HEADERS.filter(h=>headers[h]).length;const isBotUA=BOT_PATTERNS.some(p=>ua.includes(p));const isExecUA=ALLOWED_EXECUTORS.some(e=>ua.includes(e));if(isBotUA&&execScore===0)return'bot';if(browScore>=2)return'browser';if(!ua||ua.length<10){if(execScore>=2)return'executor';return'bot'}if(execScore>=2)return'executor';if(isExecUA)return'executor';if(ua.includes('mozilla')&&execScore===0&&!isExecUA){const accept=headers['accept']||'';if(accept.includes('text/html'))return'browser';return'unknown'}return'unknown'}
-function shouldBlock(req){return['bot','browser','unknown'].includes(getClientType(req))}
+function shouldBlock(req){
+const ip=getIP(req);
+// 1. Bypass jika endpoint adalah /health (selalu allow agar tidak sleep)
+if(req.path==='/health')return false;
+// 2. Bypass jika IP terdaftar di Whitelist
+if(config.WHITELIST_IPS&&config.WHITELIST_IPS.includes(ip))return false;
+if(dynamicWhitelist.ips.has(ip))return false;
+// 3. Cek Bot Detection biasa
+return['bot','browser','unknown'].includes(getClientType(req));
+}
 
 // === FAKE SCRIPT GENERATOR ===
 function genFakeScript(){const ts=Date.now(),rS=(l)=>{const c='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_';let s=c[Math.floor(Math.random()*26)];for(let i=1;i<l;i++)s+=c[Math.floor(Math.random()*c.length)];return s},rH=(l)=>{let h='';for(let i=0;i<l;i++)h+=Math.floor(Math.random()*16).toString(16);return h},rN=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;const v=Array(30).fill(0).map(()=>rS(rN(4,12)));const styles=[()=>`--[[ Luraph v${rN(12,15)}.${rN(0,9)}.${rN(0,9)} | ${rH(32)} ]]\nlocal ${v[0]},${v[1]},${v[2]};\nlocal ${v[4]}=(function()\nlocal ${v[5]}={${Array(rN(20,40)).fill(0).map(()=>`"\\${rN(100,255)}\\${rN(100,255)}"`).join(',')}};\nreturn 0x${rH(4)};\nend)();\nerror("Verification failed",0);`,()=>`--[=[ IronBrew2 ${rN(1,3)}.${rN(0,9)}${rN(0,9)} ]=]\nlocal ${v[0]}="${rH(64)}";\nlocal ${v[1]}=coroutine.wrap(function()\nwhile true do coroutine.yield(math.random(0,${rN(10000,99999)}));end\nend);\n--[=[ VM Encrypted ]=]`];return styles[Math.floor(Math.random()*styles.length)]()}
