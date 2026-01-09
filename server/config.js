@@ -5,6 +5,7 @@ SECRET_KEY:process.env.SECRET_KEY||'another-secret-key-32-chars',
 SCRIPT_SOURCE_URL:process.env.SCRIPT_SOURCE_URL||'',
 LOADER_KEY:process.env.LOADER_KEY||process.env.SECRET_KEY||'loader-key',
 REDIS_URL:process.env.REDIS_URL||'',
+DISCORD_WEBHOOK:process.env.DISCORD_WEBHOOK||'',
 WHITELIST_USER_IDS:process.env.WHITELIST_USER_IDS?process.env.WHITELIST_USER_IDS.split(',').map(Number).filter(Boolean):[],
 WHITELIST_HWIDS:process.env.WHITELIST_HWIDS?process.env.WHITELIST_HWIDS.split(',').filter(Boolean):[],
 OWNER_USER_IDS:process.env.OWNER_USER_IDS?process.env.OWNER_USER_IDS.split(',').map(Number).filter(Boolean):[],
@@ -12,5 +13,9 @@ ALLOWED_PLACE_IDS:process.env.ALLOWED_PLACE_IDS?process.env.ALLOWED_PLACE_IDS.sp
 REQUIRE_HWID:process.env.REQUIRE_HWID==='true',
 SCRIPT_ALREADY_OBFUSCATED:process.env.SCRIPT_ALREADY_OBFUSCATED==='true',
 ENCODE_LOADER:process.env.ENCODE_LOADER!=='false',
+ANTI_SPY_ENABLED:process.env.ANTI_SPY_ENABLED!=='false',
+AUTO_BAN_SPYTOOLS:process.env.AUTO_BAN_SPYTOOLS==='true',
+CHUNK_DELIVERY:process.env.CHUNK_DELIVERY!=='false',
+CHUNK_COUNT:parseInt(process.env.CHUNK_COUNT)||3,
 PORT:process.env.PORT||3000
 };
