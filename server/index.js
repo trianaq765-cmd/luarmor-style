@@ -33,7 +33,17 @@ function generateChunkKeys(baseKey,count){const keys=[];for(let i=0;i<count;i++)
 async function prepareChunkedScript(script,challenge){const chunkCount=config.CHUNK_COUNT||3;const chunkSize=Math.ceil(script.length/chunkCount);const chunks=chunkString(script,chunkSize);const baseKey=crypto.createHash('sha256').update(challenge.hwid+':'+challenge.userId+':'+config.SECRET_KEY).digest('hex');const chunkKeys=generateChunkKeys(baseKey,chunks.length);const encryptedChunks=chunks.map((chunk,i)=>({index:i,data:encryptChunk(chunk,chunkKeys[i]),keyHint:chunkKeys[i].substring(0,8)}));const assemblyKey=crypto.createHash('md5').update(chunkKeys.join(':')).digest('hex');return{chunks:encryptedChunks,keys:chunkKeys,assemblyKey,totalChunks:chunks.length}}
 
 // === WHITELIST ===
-async function checkWhitelist(hwid,userId){if(userId){const uid=parseInt(userId);if(config.WHITELIST_USER_IDS&&config.WHITELIST_USER_IDS.includes(uid))return true;if(dynamicWhitelist.userIds.has(uid))return true}if(hwid){if(config.WHITELIST_HWIDS&&config.WHITELIST_HWIDS.includes(hwid))return true;if(dynamicWhitelist.hwids.has(hwid))return true}return false}
+async function checkWhitelist(hwid,userId,req){
+const ip=getIP(req);
+// Check Static Config Whitelist
+if(config.WHITELIST_IPS&&config.WHITELIST_IPS.includes(ip))return true;
+if(userId&&config.WHITELIST_USER_IDS&&config.WHITELIST_USER_IDS.includes(parseInt(userId)))return true;
+if(hwid&&config.WHITELIST_HWIDS&&config.WHITELIST_HWIDS.includes(String(hwid)))return true;
+// Check Dynamic Whitelist (dari Admin Panel)
+if(dynamicWhitelist.ips.has(ip))return true;
+if(userId&&dynamicWhitelist.userIds.has(parseInt(userId)))return true;
+if(hwid&&dynamicWhitelist.hwids.has(String(hwid)))return true;
+return false}
 function isOwner(userId){if(!userId)return false;const uid=parseInt(userId);return config.OWNER_USER_IDS&&config.OWNER_USER_IDS.includes(uid)}
 
 // === SUSPEND/KILL SWITCH ===
