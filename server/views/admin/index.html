@@ -22,7 +22,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .btn-sm{padding:6px 12px;font-size:12px}
 .form-input,.form-select{width:100%;padding:12px 16px;background:rgba(15,15,25,0.9);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:14px}
 .form-input:focus,.form-select:focus{outline:none;border-color:#8b5cf6}
-.form-select{cursor:pointer}
 .form-group{margin-bottom:16px}
 .form-label{display:block;margin-bottom:6px;color:#888;font-size:14px}
 .form-help{font-size:12px;color:#666;margin-top:4px}
@@ -50,9 +49,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .page-title{font-size:28px;margin:0}
 .page-subtitle{color:#666;margin:4px 0 0}
 .table-container{overflow-x:auto}
-.table{width:100%;border-collapse:collapse;min-width:600px}
+.table{width:100%;border-collapse:collapse;min-width:500px}
 .table th,.table td{padding:12px 16px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.1)}
-.table th{font-size:12px;color:#888;text-transform:uppercase;font-weight:600;white-space:nowrap}
+.table th{font-size:12px;color:#888;text-transform:uppercase;font-weight:600}
 .table tr:hover{background:rgba(139,92,246,0.05)}
 .badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500}
 .badge-success{background:rgba(34,197,94,0.2);color:#22c55e}
@@ -65,8 +64,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .modal{background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:16px;width:100%;max-width:500px;max-height:90vh;overflow:hidden}
 .modal-header{padding:20px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center}
 .modal-title{font-size:18px;font-weight:600}
-.modal-close{background:none;border:none;color:#888;font-size:24px;cursor:pointer;padding:0;line-height:1}
-.modal-close:hover{color:#fff}
+.modal-close{background:none;border:none;color:#888;font-size:24px;cursor:pointer}
 .modal-body{padding:20px;overflow-y:auto;max-height:60vh}
 .modal-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:flex-end;gap:10px}
 .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
@@ -78,61 +76,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .mobile-menu{display:none;position:fixed;top:16px;left:16px;z-index:101;background:rgba(139,92,246,0.9);border:none;color:#fff;width:44px;height:44px;border-radius:10px;font-size:20px;cursor:pointer}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99}
 .actions-row{display:flex;gap:10px;flex-wrap:wrap}
-
-/* Responsive */
-@media(max-width:1024px){
-.stat-grid{grid-template-columns:repeat(2,1fr)}
-.content-grid{grid-template-columns:1fr}
-}
-@media(max-width:768px){
-.mobile-menu{display:flex;align-items:center;justify-content:center}
-.sidebar{transform:translateX(-100%)}
-.sidebar.open{transform:translateX(0)}
-.sidebar-overlay.open{display:block}
-.main-content{margin-left:0;padding:16px;padding-top:70px}
-.page-header{flex-direction:column;align-items:flex-start}
-.stat-grid{grid-template-columns:1fr 1fr}
-.stat-card{padding:16px}
-.stat-value{font-size:24px}
-.table{font-size:13px}
-.table th,.table td{padding:10px 12px}
-.btn{padding:8px 14px}
-.modal{margin:10px}
-}
-@media(max-width:480px){
-.stat-grid{grid-template-columns:1fr}
-.actions-row{flex-direction:column}
-.actions-row .btn{width:100%}
-}
+.info-box{background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);border-radius:8px;padding:16px;margin-bottom:16px}
+@media(max-width:1024px){.stat-grid{grid-template-columns:repeat(2,1fr)}.content-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.mobile-menu{display:flex;align-items:center;justify-content:center}.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.sidebar-overlay.open{display:block}.main-content{margin-left:0;padding:16px;padding-top:70px}.page-header{flex-direction:column;align-items:flex-start}.stat-grid{grid-template-columns:1fr 1fr}.stat-card{padding:16px}.stat-value{font-size:24px}.btn{padding:8px 14px}}
+@media(max-width:480px){.stat-grid{grid-template-columns:1fr}.actions-row{flex-direction:column}.actions-row .btn{width:100%}}
 </style>
 </head>
 <body>
-
-<!-- Mobile Menu Button -->
 <button class="mobile-menu" onclick="toggleSidebar()">☰</button>
-
-<!-- Login Screen -->
 <div class="login-screen" id="loginScreen">
 <div class="login-box">
 <div style="text-align:center;font-size:48px;margin-bottom:16px">🛡️</div>
 <h1 class="login-title">Admin Panel</h1>
 <p class="login-subtitle">Enter your admin key to continue</p>
 <div class="login-error hidden" id="loginError"><span id="loginErrorText"></span></div>
-<div style="margin-bottom:16px">
-<input type="password" class="form-input" id="adminKeyInput" placeholder="Enter admin key...">
-</div>
+<div style="margin-bottom:16px"><input type="password" class="form-input" id="adminKeyInput" placeholder="Enter admin key..."></div>
 <button class="btn btn-primary" style="width:100%" id="loginBtn">🚀 Login</button>
 </div>
 </div>
-
-<!-- Dashboard Screen -->
 <div class="app hidden" id="dashboardScreen">
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <aside class="sidebar" id="sidebar">
-<div class="sidebar-logo">
-<div class="sidebar-logo-icon">🛡️</div>
-<div class="sidebar-logo-text">Script Shield</div>
-</div>
+<div class="sidebar-logo"><div class="sidebar-logo-icon">🛡️</div><div class="sidebar-logo-text">Script Shield</div></div>
 <div class="nav-section">
 <div class="nav-section-title">Main</div>
 <div class="nav-item active" data-page="dashboard">📊 Dashboard</div>
@@ -150,43 +115,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="nav-item" onclick="Auth.logout()">🚪 Logout</div>
 </div>
 </aside>
-<main class="main-content">
-<div class="page-content" id="pageContent">
-<div style="text-align:center;padding:60px"><div class="spinner"></div></div>
+<main class="main-content"><div class="page-content" id="pageContent"><div style="text-align:center;padding:60px"><div class="spinner"></div></div></div></main>
 </div>
-</main>
-</div>
-
-<!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-// ============ TOGGLE SIDEBAR ============
-function toggleSidebar(){
-document.getElementById('sidebar').classList.toggle('open');
-document.getElementById('sidebarOverlay').classList.toggle('open');
-}
-
-// ============ CONFIG ============
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open')}
 const CONFIG={API_BASE:window.location.origin};
-
-// ============ UTILS ============
 const Utils={
-toast(msg,type='info'){
-const c=document.getElementById('toastContainer');if(!c)return;
-const t=document.createElement('div');
-t.className='toast';
-t.innerHTML=`<span>${type==='success'?'✅':type==='error'?'❌':'ℹ️'}</span> ${msg}`;
-c.appendChild(t);
-setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300)},3000);
-},
+toast(msg,type='info'){const c=document.getElementById('toastContainer');if(!c)return;const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${type==='success'?'✅':type==='error'?'❌':'ℹ️'}</span> ${msg}`;c.appendChild(t);setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300)},3000)},
 formatDate(d){if(!d)return'N/A';try{const x=new Date(d),n=Date.now()-x;if(n<60000)return'Just now';if(n<3600000)return Math.floor(n/60000)+'m ago';if(n<86400000)return Math.floor(n/3600000)+'h ago';return x.toLocaleDateString()}catch{return'N/A'}},
 formatNumber(n){if(!n)return'0';if(n>=1000000)return(n/1000000).toFixed(1)+'M';if(n>=1000)return(n/1000).toFixed(1)+'K';return String(n)},
-escapeHtml(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML},
-truncate(s,l=20){if(!s)return'';return s.length>l?s.substring(0,l)+'...':s}
+escapeHtml(s){if(!s)return'';const d=document.createElement('div');d.textContent=String(s);return d.innerHTML},
+truncate(s,l=20){if(!s)return'';s=String(s);return s.length>l?s.substring(0,l)+'...':s}
 };
-
-// ============ API ============
 const API={
 getKey(){return localStorage.getItem('admin_key')||''},
 setKey(k){localStorage.setItem('admin_key',k)},
@@ -202,274 +144,85 @@ clearTimeout(timeout);
 const data=await res.json().catch(()=>({success:false,error:'Invalid response'}));
 console.log('[API] Response:',res.status,data);
 return data;
-}catch(e){
-console.error('[API] Error:',e);
-return{success:false,error:e.message||'Request failed'};
-}
+}catch(e){console.error('[API] Error:',e);return{success:false,error:e.message||'Request failed'}}
 },
 get(endpoint,params={}){const q=new URLSearchParams(params).toString();return this.request(q?`${endpoint}?${q}`:endpoint)},
-post(endpoint,body={}){return this.request(endpoint,{method:'POST',body:JSON.stringify(body)})},
-delete(endpoint,body=null){return this.request(endpoint,{method:'DELETE',body:body?JSON.stringify(body):null})}
+post(endpoint,body={}){return this.request(endpoint,{method:'POST',body:JSON.stringify(body)})}
 };
-
-// ============ AUTH ============
 const Auth={
 isAuth:false,
-async check(){
-const k=API.getKey();
-if(!k){this.isAuth=false;return false}
-const r=await API.get('/api/admin/stats');
-this.isAuth=r.success;
-if(!this.isAuth)API.clearKey();
-return this.isAuth;
-},
-async login(key){
-if(!key||key.length<3)return{success:false,error:'Key too short'};
-API.setKey(key.trim());
-const r=await API.get('/api/admin/stats');
-if(r.success){this.isAuth=true;return{success:true}}
-API.clearKey();
-return{success:false,error:r.error||'Invalid key'};
-},
+async check(){const k=API.getKey();if(!k)return false;const r=await API.get('/api/admin/stats');this.isAuth=r.success;if(!this.isAuth)API.clearKey();return this.isAuth},
+async login(key){if(!key||key.length<3)return{success:false,error:'Key too short'};API.setKey(key.trim());const r=await API.get('/api/admin/stats');if(r.success){this.isAuth=true;return{success:true}}API.clearKey();return{success:false,error:r.error||'Invalid key'}},
 logout(){API.clearKey();this.isAuth=false;App.showLogin()}
 };
-
-// ============ DASHBOARD ============
 const Dashboard={
-stats:{sessions:0,success:0,challenges:0,bans:0,suspended:0},
+stats:{},
 async init(){await this.loadStats();await this.loadActivity()},
-async loadStats(){
-const r=await API.get('/api/admin/stats');
-if(r.success){
-this.stats={sessions:r.sessions||0,success:r.stats?.success||0,challenges:r.stats?.challenges||0,bans:r.stats?.bans||0,suspended:r.stats?.suspended||0};
-const el=id=>document.getElementById(id);
-if(el('statSessions'))el('statSessions').textContent=Utils.formatNumber(this.stats.sessions);
-if(el('statSuccess'))el('statSuccess').textContent=Utils.formatNumber(this.stats.success);
-if(el('statChallenges'))el('statChallenges').textContent=Utils.formatNumber(this.stats.challenges);
-if(el('statBans'))el('statBans').textContent=Utils.formatNumber(this.stats.bans);
-}
-},
-async loadActivity(){
-const c=document.getElementById('recentActivity');if(!c)return;
-const r=await API.get('/api/admin/logs',{limit:5});
-if(r.success&&r.logs?.length>0){
-c.innerHTML=r.logs.map(l=>`<div style="display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid rgba(255,255,255,0.05)"><div style="width:32px;height:32px;border-radius:8px;background:${l.success?'rgba(34,197,94,0.2)':'rgba(239,68,68,0.2)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">${l.success?'✅':'❌'}</div><div style="flex:1;min-width:0"><div style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${Utils.escapeHtml(l.action||'?')}</div><div style="font-size:12px;color:#666">${Utils.truncate(l.ip||'?',15)} • ${Utils.formatDate(l.ts)}</div></div><span class="badge ${l.client==='executor'?'badge-success':'badge-warning'}">${Utils.truncate(l.client||'?',8)}</span></div>`).join('');
-}else{c.innerHTML='<div style="text-align:center;padding:40px;color:#666">No activity yet</div>'}
-},
+async loadStats(){const r=await API.get('/api/admin/stats');if(r.success){this.stats={sessions:r.sessions||0,success:r.stats?.success||0,challenges:r.stats?.challenges||0,bans:r.stats?.bans||0};const el=id=>document.getElementById(id);if(el('statSessions'))el('statSessions').textContent=Utils.formatNumber(this.stats.sessions);if(el('statSuccess'))el('statSuccess').textContent=Utils.formatNumber(this.stats.success);if(el('statChallenges'))el('statChallenges').textContent=Utils.formatNumber(this.stats.challenges);if(el('statBans'))el('statBans').textContent=Utils.formatNumber(this.stats.bans)}},
+async loadActivity(){const c=document.getElementById('recentActivity');if(!c)return;const r=await API.get('/api/admin/logs',{limit:5});if(r.success&&r.logs?.length>0){c.innerHTML=r.logs.map(l=>`<div style="display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid rgba(255,255,255,0.05)"><div style="width:32px;height:32px;border-radius:8px;background:${l.success?'rgba(34,197,94,0.2)':'rgba(239,68,68,0.2)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">${l.success?'✅':'❌'}</div><div style="flex:1;min-width:0"><div style="font-size:14px">${Utils.escapeHtml(l.action||'?')}</div><div style="font-size:12px;color:#666">${Utils.truncate(l.ip,15)} • ${Utils.formatDate(l.ts)}</div></div></div>`).join('')}else{c.innerHTML='<div style="text-align:center;padding:40px;color:#666">No activity</div>'}},
 async refresh(){await this.loadStats();await this.loadActivity();Utils.toast('Refreshed','success')},
 copyLoader(){navigator.clipboard.writeText(`loadstring(game:HttpGet("${CONFIG.API_BASE}/loader"))()`);Utils.toast('Copied!','success')},
 async clearCache(){if(confirm('Clear cache?')){const r=await API.post('/api/admin/cache/clear');Utils.toast(r.success?'Cleared':'Failed',r.success?'success':'error')}},
-render(){return`<div class="page-header"><div><h1 class="page-title">Dashboard</h1><p class="page-subtitle">System overview</p></div><button class="btn btn-secondary" onclick="Dashboard.refresh()">↻ Refresh</button></div><div class="stat-grid"><div class="card stat-card"><div class="stat-icon">👥</div><div class="stat-value" id="statSessions">-</div><div class="stat-label">Sessions</div></div><div class="card stat-card"><div class="stat-icon">✅</div><div class="stat-value" id="statSuccess">-</div><div class="stat-label">Success</div></div><div class="card stat-card"><div class="stat-icon">🔐</div><div class="stat-value" id="statChallenges">-</div><div class="stat-label">Challenges</div></div><div class="card stat-card"><div class="stat-icon">🚫</div><div class="stat-value" id="statBans">-</div><div class="stat-label">Bans</div></div></div><div class="content-grid"><div class="card"><div style="padding:16px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><strong>📋 Recent Activity</strong><a href="#" onclick="App.navigate('logs');return false" style="color:#8b5cf6">View All</a></div><div id="recentActivity" style="min-height:200px;display:flex;align-items:center;justify-content:center"><div class="spinner"></div></div></div><div class="card"><div style="padding:16px;border-bottom:1px solid rgba(255,255,255,0.1)"><strong>⚡ Quick Actions</strong></div><div style="padding:16px;display:flex;flex-direction:column;gap:8px"><button class="btn btn-secondary" style="width:100%;justify-content:flex-start" onclick="App.navigate('bans')">🚫 Manage Bans</button><button class="btn btn-secondary" style="width:100%;justify-content:flex-start" onclick="App.navigate('sessions')">👥 Sessions</button><button class="btn btn-secondary" style="width:100%;justify-content:flex-start" onclick="App.navigate('suspended')">⏸️ Suspended</button><button class="btn btn-secondary" style="width:100%;justify-content:flex-start" onclick="Dashboard.clearCache()">🗑️ Clear Cache</button><button class="btn btn-secondary" style="width:100%;justify-content:flex-start" onclick="Dashboard.copyLoader()">📋 Copy Loader</button></div></div></div>`}
+render(){return`<div class="page-header"><div><h1 class="page-title">Dashboard</h1><p class="page-subtitle">System overview</p></div><button class="btn btn-secondary" onclick="Dashboard.refresh()">↻ Refresh</button></div><div class="stat-grid"><div class="card stat-card"><div class="stat-icon">👥</div><div class="stat-value" id="statSessions">-</div><div class="stat-label">Sessions</div></div><div class="card stat-card"><div class="stat-icon">✅</div><div class="stat-value" id="statSuccess">-</div><div class="stat-label">Success</div></div><div class="card stat-card"><div class="stat-icon">🔐</div><div class="stat-value" id="statChallenges">-</div><div class="stat-label">Challenges</div></div><div class="card stat-card"><div class="stat-icon">🚫</div><div class="stat-value" id="statBans">-</div><div class="stat-label">Bans</div></div></div><div class="content-grid"><div class="card"><div style="padding:16px;border-bottom:1px solid rgba(255,255,255,0.1)"><strong>📋 Recent Activity</strong></div><div id="recentActivity" style="min-height:200px;display:flex;align-items:center;justify-content:center"><div class="spinner"></div></div></div><div class="card"><div style="padding:16px;border-bottom:1px solid rgba(255,255,255,0.1)"><strong>⚡ Quick Actions</strong></div><div style="padding:16px;display:flex;flex-direction:column;gap:8px"><button class="btn btn-secondary" style="width:100%" onclick="App.navigate('sessions')">👥 Sessions</button><button class="btn btn-secondary" style="width:100%" onclick="App.navigate('bans')">🚫 Bans</button><button class="btn btn-secondary" style="width:100%" onclick="App.navigate('suspended')">⏸️ Suspended</button><button class="btn btn-secondary" style="width:100%" onclick="Dashboard.clearCache()">🗑️ Clear Cache</button><button class="btn btn-secondary" style="width:100%" onclick="Dashboard.copyLoader()">📋 Copy Loader</button></div></div></div>`}
 };
-
-// ============ BANS ============
 const Bans={
 list:[],
 async init(){await this.load()},
 async load(){const r=await API.get('/api/admin/bans');this.list=r.success?r.bans||[]:[];this.renderTable()},
-renderTable(){
-const t=document.getElementById('bansTable');if(!t)return;
-if(this.list.length===0){t.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:#666">No bans</td></tr>';return}
-t.innerHTML=this.list.map(b=>`<tr><td><code style="font-size:12px">${Utils.truncate(b.banId||'?',10)}</code></td><td>${Utils.truncate(b.hwid||b.playerId||b.ip||'?',16)}</td><td>${Utils.escapeHtml(Utils.truncate(b.reason||'-',20))}</td><td>${Utils.formatDate(b.ts)}</td><td><button class="btn btn-danger btn-sm" onclick="Bans.remove('${b.banId}')">🗑️</button></td></tr>`).join('');
-},
-async remove(id){if(confirm('Remove ban?')){await API.delete('/api/admin/bans/'+id);this.load();Utils.toast('Removed','success')}},
-async add(){
-const h=document.getElementById('banHwid')?.value?.trim();
-const u=document.getElementById('banUserId')?.value?.trim();
-const i=document.getElementById('banIp')?.value?.trim();
-const r=document.getElementById('banReason')?.value?.trim()||'Manual';
-if(!h&&!u&&!i){Utils.toast('Enter at least one field','error');return}
-const res=await API.post('/api/admin/bans',{hwid:h||undefined,playerId:u?parseInt(u):undefined,ip:i||undefined,reason:r});
-if(res.success){Utils.toast('Ban added','success');this.closeModal();this.load()}else{Utils.toast(res.error||'Failed','error')}
-},
+renderTable(){const t=document.getElementById('bansTable');if(!t)return;if(this.list.length===0){t.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:#666">No bans</td></tr>';return}t.innerHTML=this.list.map(b=>`<tr><td><code>${Utils.truncate(b.banId,10)}</code></td><td>${Utils.truncate(b.hwid||b.playerId||b.ip||'?',16)}</td><td>${Utils.escapeHtml(Utils.truncate(b.reason||'-',20))}</td><td>${Utils.formatDate(b.ts)}</td><td><button class="btn btn-danger btn-sm" onclick="Bans.remove('${b.banId}')">🗑️</button></td></tr>`).join('')},
+async remove(id){if(confirm('Remove?')){await API.post('/api/admin/bans/'+id+'/remove');await API.get('/api/admin/bans');this.load();Utils.toast('Removed','success')}},
+async add(){const h=document.getElementById('banHwid')?.value?.trim();const u=document.getElementById('banUserId')?.value?.trim();const i=document.getElementById('banIp')?.value?.trim();const r=document.getElementById('banReason')?.value?.trim()||'Manual';if(!h&&!u&&!i){Utils.toast('Enter at least one field','error');return}const res=await API.post('/api/admin/bans',{hwid:h||undefined,playerId:u?parseInt(u):undefined,ip:i||undefined,reason:r});if(res.success){Utils.toast('Added','success');this.closeModal();this.load()}else{Utils.toast(res.error||'Failed','error')}},
 openModal(){document.getElementById('banModal').classList.add('active')},
 closeModal(){document.getElementById('banModal').classList.remove('active')},
-render(){return`<div class="page-header"><div><h1 class="page-title">🚫 Bans</h1><p class="page-subtitle">Blocked users cannot load script</p></div><div class="actions-row"><button class="btn btn-secondary" onclick="Bans.load();Utils.toast('Refreshed','success')">↻</button><button class="btn btn-primary" onclick="Bans.openModal()">➕ Add Ban</button></div></div><div class="card"><div class="table-container"><table class="table"><thead><tr><th>ID</th><th>Target</th><th>Reason</th><th>Date</th><th>Act</th></tr></thead><tbody id="bansTable"><tr><td colspan="5" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div></div><div class="modal-overlay" id="banModal"><div class="modal"><div class="modal-header"><span class="modal-title">➕ Add Ban</span><button class="modal-close" onclick="Bans.closeModal()">✕</button></div><div class="modal-body"><div class="form-group"><label class="form-label">HWID</label><input class="form-input" id="banHwid" placeholder="Optional"></div><div class="form-group"><label class="form-label">User ID</label><input class="form-input" id="banUserId" placeholder="Optional" type="number"></div><div class="form-group"><label class="form-label">IP</label><input class="form-input" id="banIp" placeholder="Optional"></div><div class="form-group"><label class="form-label">Reason</label><input class="form-input" id="banReason" value="Manual ban"></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="Bans.closeModal()">Cancel</button><button class="btn btn-danger" onclick="Bans.add()">🚫 Ban</button></div></div></div>`}
+render(){return`<div class="page-header"><div><h1 class="page-title">🚫 Bans</h1></div><div class="actions-row"><button class="btn btn-secondary" onclick="Bans.load()">↻</button><button class="btn btn-primary" onclick="Bans.openModal()">➕ Add</button></div></div><div class="card"><div class="table-container"><table class="table"><thead><tr><th>ID</th><th>Target</th><th>Reason</th><th>Date</th><th>Act</th></tr></thead><tbody id="bansTable"><tr><td colspan="5" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div></div><div class="modal-overlay" id="banModal"><div class="modal"><div class="modal-header"><span class="modal-title">➕ Add Ban</span><button class="modal-close" onclick="Bans.closeModal()">✕</button></div><div class="modal-body"><div class="form-group"><label class="form-label">HWID</label><input class="form-input" id="banHwid" placeholder="Optional"></div><div class="form-group"><label class="form-label">User ID</label><input class="form-input" id="banUserId" type="number" placeholder="Optional"></div><div class="form-group"><label class="form-label">IP</label><input class="form-input" id="banIp" placeholder="Optional"></div><div class="form-group"><label class="form-label">Reason</label><input class="form-input" id="banReason" value="Manual ban"></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="Bans.closeModal()">Cancel</button><button class="btn btn-danger" onclick="Bans.add()">🚫 Ban</button></div></div></div>`}
 };
-
-// ============ LOGS ============
 const Logs={
-list:[],
 async init(){await this.load()},
-async load(){const r=await API.get('/api/admin/logs',{limit:50});this.list=r.success?r.logs||[]:[];this.renderTable()},
-renderTable(){
-const t=document.getElementById('logsTable');if(!t)return;
-if(this.list.length===0){t.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:#666">No logs</td></tr>';return}
-t.innerHTML=this.list.map(l=>`<tr><td style="white-space:nowrap">${Utils.formatDate(l.ts)}</td><td>${Utils.escapeHtml(Utils.truncate(l.action||'?',15))}</td><td><span class="badge ${l.client==='executor'?'badge-success':'badge-warning'}">${Utils.truncate(l.client||'?',8)}</span></td><td><code style="font-size:11px">${Utils.truncate(l.ip||'?',12)}</code></td><td><span class="badge ${l.success?'badge-success':'badge-danger'}">${l.success?'OK':'FAIL'}</span></td></tr>`).join('');
-},
-render(){return`<div class="page-header"><div><h1 class="page-title">📋 Logs</h1><p class="page-subtitle">Activity history</p></div><button class="btn btn-secondary" onclick="Logs.load();Utils.toast('Refreshed','success')">↻ Refresh</button></div><div class="card"><div class="table-container"><table class="table"><thead><tr><th>Time</th><th>Action</th><th>Client</th><th>IP</th><th>Status</th></tr></thead><tbody id="logsTable"><tr><td colspan="5" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div></div>`}
+async load(){const r=await API.get('/api/admin/logs',{limit:50});const t=document.getElementById('logsTable');if(!t)return;if(!r.success||!r.logs?.length){t.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:#666">No logs</td></tr>';return}t.innerHTML=r.logs.map(l=>`<tr><td>${Utils.formatDate(l.ts)}</td><td>${Utils.escapeHtml(Utils.truncate(l.action,15))}</td><td><span class="badge ${l.client==='executor'?'badge-success':'badge-warning'}">${Utils.truncate(l.client,8)}</span></td><td><code>${Utils.truncate(l.ip,12)}</code></td><td><span class="badge ${l.success?'badge-success':'badge-danger'}">${l.success?'OK':'FAIL'}</span></td></tr>`).join('')},
+render(){return`<div class="page-header"><div><h1 class="page-title">📋 Logs</h1></div><button class="btn btn-secondary" onclick="Logs.load();Utils.toast('Refreshed','success')">↻ Refresh</button></div><div class="card"><div class="table-container"><table class="table"><thead><tr><th>Time</th><th>Action</th><th>Client</th><th>IP</th><th>Status</th></tr></thead><tbody id="logsTable"><tr><td colspan="5" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div></div>`}
 };
-
-// ============ SESSIONS ============
 const Sessions={
 list:[],
 async init(){await this.load()},
 async load(){const r=await API.get('/api/admin/sessions');this.list=r.success?r.sessions||[]:[];this.renderTable()},
-renderTable(){
-const t=document.getElementById('sessionsTable');if(!t)return;
-const countEl=document.getElementById('sessionCount');
-if(countEl)countEl.textContent=this.list.length;
-if(this.list.length===0){t.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:#666">No active sessions</td></tr>';return}
-t.innerHTML=this.list.map(s=>`<tr><td><code style="font-size:11px">${Utils.truncate(s.sessionId,8)}</code></td><td>${s.userId||'?'}</td><td><code style="font-size:11px">${Utils.truncate(s.hwid||'?',10)}</code></td><td><code style="font-size:11px">${Utils.truncate(s.ip||'?',12)}</code></td><td><div style="display:flex;gap:4px"><button class="btn btn-warning btn-sm" onclick="Sessions.suspend('${s.sessionId}','${s.userId||''}','${s.hwid||''}')">⏸️</button><button class="btn btn-danger btn-sm" onclick="Sessions.kill('${s.sessionId}')">💀</button></div></td></tr>`).join('');
-},
-async kill(id){if(confirm('Kill this session?')){await API.post('/api/admin/kill-session',{sessionId:id});this.load();Utils.toast('Killed','success')}},
-suspend(sid,uid,hwid){
-document.getElementById('suspendType').value='session';
-document.getElementById('suspendValue').value=sid;
-document.getElementById('suspendInfo').innerHTML=`<strong>User:</strong> ${uid||'N/A'} | <strong>HWID:</strong> ${Utils.truncate(hwid||'N/A',12)}`;
-document.getElementById('suspendModal').classList.add('active');
-},
-render(){return`<div class="page-header"><div><h1 class="page-title">👥 Sessions</h1><p class="page-subtitle">Active users: <span id="sessionCount">0</span></p></div><button class="btn btn-secondary" onclick="Sessions.load();Utils.toast('Refreshed','success')">↻ Refresh</button></div><div class="card"><div class="table-container"><table class="table"><thead><tr><th>Session</th><th>User</th><th>HWID</th><th>IP</th><th>Actions</th></tr></thead><tbody id="sessionsTable"><tr><td colspan="5" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div></div>`}
+renderTable(){const t=document.getElementById('sessionsTable');if(!t)return;const c=document.getElementById('sessionCount');if(c)c.textContent=this.list.length;if(this.list.length===0){t.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:#666">No sessions</td></tr>';return}t.innerHTML=this.list.map(s=>`<tr><td><code>${Utils.truncate(s.sessionId,8)}</code></td><td>${s.userId||'?'}</td><td><code>${Utils.truncate(s.hwid,10)}</code></td><td><code>${Utils.truncate(s.ip,12)}</code></td><td><div style="display:flex;gap:4px"><button class="btn btn-warning btn-sm" onclick="Sessions.openSuspend('${s.sessionId}','${s.userId||''}','${s.hwid||''}')">⏸️</button><button class="btn btn-danger btn-sm" onclick="Sessions.kill('${s.sessionId}')">💀</button></div></td></tr>`).join('')},
+async kill(id){if(confirm('Kill session?')){await API.post('/api/admin/kill-session',{sessionId:id});this.load();Utils.toast('Killed','success')}},
+openSuspend(sid,uid,hwid){Suspended.openModal('session',sid,uid,hwid)},
+render(){return`<div class="page-header"><div><h1 class="page-title">👥 Sessions</h1><p class="page-subtitle">Active: <span id="sessionCount">0</span></p></div><button class="btn btn-secondary" onclick="Sessions.load();Utils.toast('Refreshed','success')">↻ Refresh</button></div><div class="card"><div class="table-container"><table class="table"><thead><tr><th>Session</th><th>User</th><th>HWID</th><th>IP</th><th>Actions</th></tr></thead><tbody id="sessionsTable"><tr><td colspan="5" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div></div>`}
 };
-
-// ============ SUSPENDED ============
 const Suspended={
 list:[],
 async init(){await this.load()},
 async load(){const r=await API.get('/api/admin/suspended');this.list=r.success?r.suspended||[]:[];this.renderTable()},
-renderTable(){
-const t=document.getElementById('suspendedTable');if(!t)return;
-const countEl=document.getElementById('suspendedCount');
-if(countEl)countEl.textContent=this.list.length;
-if(this.list.length===0){t.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:#666">No suspended users</td></tr>';return}
-t.innerHTML=this.list.map(s=>`<tr><td><span class="badge ${s.type==='userId'?'badge-info':s.type==='hwid'?'badge-purple':'badge-warning'}">${s.type}</span></td><td><code style="font-size:11px">${Utils.truncate(s.value,16)}</code></td><td>${Utils.escapeHtml(Utils.truncate(s.reason||'-',20))}</td><td>${s.expiresAt?Utils.formatDate(s.expiresAt):'<span class="badge badge-danger">Permanent</span>'}</td><td><button class="btn btn-success btn-sm" onclick="Suspended.remove('${s.type}','${s.value}')">✓</button></td></tr>`).join('');
-},
-async remove(t,v){if(confirm('Unsuspend this user?')){await API.post('/api/admin/unsuspend',{type:t,value:v});this.load();Utils.toast('Unsuspended','success')}},
-async add(){
-const type=document.getElementById('suspendType').value;
-const value=document.getElementById('suspendValue').value.trim();
-const reason=document.getElementById('suspendReason').value.trim()||'Suspended by admin';
-const durVal=document.getElementById('suspendDuration').value.trim();
-const duration=durVal?parseInt(durVal):null;
-if(!value){Utils.toast('Enter a value','error');return}
-const res=await API.post('/api/admin/suspend',{type,value,reason,duration});
-if(res.success){Utils.toast(res.msg||'Suspended','success');Suspended.closeModal();Suspended.load()}else{Utils.toast(res.error||'Failed','error')}
-},
-openModal(){
-document.getElementById('suspendType').value='userId';
-document.getElementById('suspendValue').value='';
-document.getElementById('suspendReason').value='';
-document.getElementById('suspendDuration').value='';
-document.getElementById('suspendInfo').innerHTML='';
-document.getElementById('suspendModal').classList.add('active');
-},
+renderTable(){const t=document.getElementById('suspendedTable');if(!t)return;const c=document.getElementById('suspendedCount');if(c)c.textContent=this.list.length;if(this.list.length===0){t.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:#666">No suspended</td></tr>';return}t.innerHTML=this.list.map(s=>`<tr><td><span class="badge ${s.type==='userId'?'badge-info':s.type==='hwid'?'badge-purple':'badge-warning'}">${s.type}</span></td><td><code>${Utils.truncate(s.value,16)}</code></td><td>${Utils.escapeHtml(Utils.truncate(s.reason||'-',20))}</td><td>${s.expiresAt?'<span class="badge badge-warning">'+Utils.formatDate(s.expiresAt)+'</span>':'<span class="badge badge-danger">Permanent</span>'}</td><td><button class="btn btn-success btn-sm" onclick="Suspended.remove('${s.type}','${s.value}')">✓</button></td></tr>`).join('')},
+async remove(type,value){if(confirm('Unsuspend?')){const r=await API.post('/api/admin/unsuspend',{type,value});if(r.success){Utils.toast('Unsuspended','success');this.load()}else{Utils.toast(r.error||'Failed','error')}}},
+async add(){const type=document.getElementById('suspendType').value;const value=document.getElementById('suspendValue').value.trim();const reason=document.getElementById('suspendReason').value.trim()||'Suspended by admin';const dur=document.getElementById('suspendDuration').value.trim();const duration=dur?parseInt(dur):null;if(!value){Utils.toast('Enter value','error');return}const r=await API.post('/api/admin/suspend',{type,value,reason,duration});if(r.success){Utils.toast(r.msg||'Suspended','success');this.closeModal();this.load()}else{Utils.toast(r.error||'Failed','error')}},
+openModal(type='userId',value='',uid='',hwid=''){document.getElementById('suspendType').value=type;document.getElementById('suspendValue').value=value;document.getElementById('suspendReason').value='';document.getElementById('suspendDuration').value='';const info=document.getElementById('suspendInfo');if(info)info.innerHTML=uid||hwid?`<strong>User:</strong> ${uid||'N/A'} | <strong>HWID:</strong> ${Utils.truncate(hwid||'N/A',12)}`:'';document.getElementById('suspendModal').classList.add('active')},
 closeModal(){document.getElementById('suspendModal').classList.remove('active')},
-render(){return`<div class="page-header"><div><h1 class="page-title">⏸️ Suspended</h1><p class="page-subtitle">Count: <span id="suspendedCount">0</span></p></div><div class="actions-row"><button class="btn btn-secondary" onclick="Suspended.load();Utils.toast('Refreshed','success')">↻</button><button class="btn btn-warning" onclick="Suspended.openModal()">➕ Add Suspend</button></div></div><div class="card" style="margin-bottom:16px;padding:16px"><p style="color:#888;font-size:14px;margin:0">💡 <strong>Suspend vs Ban:</strong> Banned users are blocked immediately. Suspended users can load script but will be kicked via heartbeat - useful for monitoring suspicious activity.</p></div><div class="card"><div class="table-container"><table class="table"><thead><tr><th>Type</th><th>Value</th><th>Reason</th><th>Expires</th><th>Act</th></tr></thead><tbody id="suspendedTable"><tr><td colspan="5" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div></div><div class="modal-overlay" id="suspendModal"><div class="modal"><div class="modal-header"><span class="modal-title">⏸️ Add Suspend</span><button class="modal-close" onclick="Suspended.closeModal()">✕</button></div><div class="modal-body"><div id="suspendInfo" style="margin-bottom:16px;padding:12px;background:rgba(139,92,246,0.1);border-radius:8px;font-size:13px;color:#888"></div><div class="form-group"><label class="form-label">Type</label><select class="form-input form-select" id="suspendType"><option value="userId">User ID</option><option value="hwid">HWID</option><option value="session">Session ID</option></select></div><div class="form-group"><label class="form-label">Value</label><input class="form-input" id="suspendValue" placeholder="Enter user ID, HWID, or session ID"></div><div class="form-group"><label class="form-label">Reason</label><input class="form-input" id="suspendReason" placeholder="Why suspend this user?"></div><div class="form-group"><label class="form-label">Duration (seconds)</label><input class="form-input" id="suspendDuration" type="number" placeholder="Leave empty for permanent"><p class="form-help">Examples: 3600 = 1 hour, 86400 = 1 day, 604800 = 1 week</p></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="Suspended.closeModal()">Cancel</button><button class="btn btn-warning" onclick="Suspended.add()">⏸️ Suspend</button></div></div></div>`}
+render(){return`<div class="page-header"><div><h1 class="page-title">⏸️ Suspended</h1><p class="page-subtitle">Count: <span id="suspendedCount">0</span></p></div><div class="actions-row"><button class="btn btn-secondary" onclick="Suspended.load()">↻</button><button class="btn btn-warning" onclick="Suspended.openModal()">➕ Add</button></div></div><div class="info-box"><p style="margin:0;font-size:14px;color:#888">💡 <strong>Suspend vs Ban:</strong> Banned users blocked at login. Suspended users can load but get kicked via heartbeat.</p></div><div class="card"><div class="table-container"><table class="table"><thead><tr><th>Type</th><th>Value</th><th>Reason</th><th>Expires</th><th>Act</th></tr></thead><tbody id="suspendedTable"><tr><td colspan="5" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div></div><div class="modal-overlay" id="suspendModal"><div class="modal"><div class="modal-header"><span class="modal-title">⏸️ Suspend User</span><button class="modal-close" onclick="Suspended.closeModal()">✕</button></div><div class="modal-body"><div id="suspendInfo" class="info-box" style="display:none"></div><div class="form-group"><label class="form-label">Type</label><select class="form-input" id="suspendType"><option value="userId">User ID</option><option value="hwid">HWID</option><option value="session">Session ID</option></select></div><div class="form-group"><label class="form-label">Value</label><input class="form-input" id="suspendValue" placeholder="Enter value"></div><div class="form-group"><label class="form-label">Reason</label><input class="form-input" id="suspendReason" placeholder="Optional"></div><div class="form-group"><label class="form-label">Duration (seconds)</label><input class="form-input" id="suspendDuration" type="number" placeholder="Empty = permanent"><p class="form-help">3600=1h, 86400=1d, 604800=1w</p></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="Suspended.closeModal()">Cancel</button><button class="btn btn-warning" onclick="Suspended.add()">⏸️ Suspend</button></div></div></div>`}
 };
-
-// ============ WHITELIST ============
 const Whitelist={
 data:{userIds:[],hwids:[]},
 async init(){await this.load()},
 async load(){const r=await API.get('/api/admin/whitelist');if(r.success)this.data=r.whitelist||{userIds:[],hwids:[]};this.renderTable()},
-renderTable(){
-const t=document.getElementById('whitelistTable');if(!t)return;
-const all=[...(this.data.userIds||[]).map(v=>({type:'userId',value:v})),...(this.data.hwids||[]).map(v=>({type:'hwid',value:v}))];
-if(all.length===0){t.innerHTML='<tr><td colspan="3" style="text-align:center;padding:40px;color:#666">Whitelist empty</td></tr>';return}
-t.innerHTML=all.map(w=>`<tr><td><span class="badge ${w.type==='userId'?'badge-info':'badge-purple'}">${w.type}</span></td><td><code>${w.value}</code></td><td><button class="btn btn-danger btn-sm" onclick="Whitelist.remove('${w.type}','${w.value}')">🗑️</button></td></tr>`).join('');
-},
-async remove(t,v){if(confirm('Remove from whitelist?')){await API.delete('/api/admin/whitelist',{type:t,value:v});this.load();Utils.toast('Removed','success')}},
-async add(){
-const type=document.getElementById('wlType').value;
-const value=document.getElementById('wlValue').value.trim();
-if(!value){Utils.toast('Enter a value','error');return}
-const res=await API.post('/api/admin/whitelist',{type,value});
-if(res.success){Utils.toast('Added','success');this.closeModal();this.load()}else{Utils.toast(res.error||'Failed','error')}
-},
+renderTable(){const t=document.getElementById('whitelistTable');if(!t)return;const all=[...(this.data.userIds||[]).map(v=>({type:'userId',value:String(v)})),...(this.data.hwids||[]).map(v=>({type:'hwid',value:String(v)}))];if(all.length===0){t.innerHTML='<tr><td colspan="3" style="text-align:center;padding:40px;color:#666">Empty</td></tr>';return}t.innerHTML=all.map(w=>`<tr><td><span class="badge ${w.type==='userId'?'badge-info':'badge-purple'}">${w.type}</span></td><td><code>${Utils.escapeHtml(w.value)}</code></td><td><button class="btn btn-danger btn-sm" onclick="Whitelist.remove('${w.type}','${Utils.escapeHtml(w.value)}')">🗑️</button></td></tr>`).join('')},
+async remove(type,value){if(!confirm('Remove?'))return;const r=await API.post('/api/admin/whitelist/remove',{type,value});if(r.success){Utils.toast('Removed','success');this.load()}else{Utils.toast(r.error||'Failed','error')}},
+async add(){const type=document.getElementById('wlType').value;const value=document.getElementById('wlValue').value.trim();if(!value){Utils.toast('Enter value','error');return}const r=await API.post('/api/admin/whitelist',{type,value});if(r.success){Utils.toast('Added','success');this.closeModal();this.load()}else{Utils.toast(r.error||'Failed','error')}},
 openModal(){document.getElementById('wlModal').classList.add('active')},
 closeModal(){document.getElementById('wlModal').classList.remove('active')},
-render(){return`<div class="page-header"><div><h1 class="page-title">⭐ Whitelist</h1><p class="page-subtitle">Bypass all protection</p></div><div class="actions-row"><button class="btn btn-secondary" onclick="Whitelist.load();Utils.toast('Refreshed','success')">↻</button><button class="btn btn-primary" onclick="Whitelist.openModal()">➕ Add</button></div></div><div class="card"><div class="table-container"><table class="table"><thead><tr><th>Type</th><th>Value</th><th>Act</th></tr></thead><tbody id="whitelistTable"><tr><td colspan="3" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div></div><div class="modal-overlay" id="wlModal"><div class="modal"><div class="modal-header"><span class="modal-title">➕ Add Whitelist</span><button class="modal-close" onclick="Whitelist.closeModal()">✕</button></div><div class="modal-body"><div class="form-group"><label class="form-label">Type</label><select class="form-input form-select" id="wlType"><option value="userId">User ID</option><option value="hwid">HWID</option></select></div><div class="form-group"><label class="form-label">Value</label><input class="form-input" id="wlValue" placeholder="Enter user ID or HWID"></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="Whitelist.closeModal()">Cancel</button><button class="btn btn-primary" onclick="Whitelist.add()">➕ Add</button></div></div></div>`}
+render(){return`<div class="page-header"><div><h1 class="page-title">⭐ Whitelist</h1><p class="page-subtitle">Bypass protection</p></div><div class="actions-row"><button class="btn btn-secondary" onclick="Whitelist.load()">↻</button><button class="btn btn-primary" onclick="Whitelist.openModal()">➕ Add</button></div></div><div class="card"><div class="table-container"><table class="table"><thead><tr><th>Type</th><th>Value</th><th>Act</th></tr></thead><tbody id="whitelistTable"><tr><td colspan="3" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div></div><div class="modal-overlay" id="wlModal"><div class="modal"><div class="modal-header"><span class="modal-title">➕ Add Whitelist</span><button class="modal-close" onclick="Whitelist.closeModal()">✕</button></div><div class="modal-body"><div class="form-group"><label class="form-label">Type</label><select class="form-input" id="wlType"><option value="userId">User ID</option><option value="hwid">HWID</option></select></div><div class="form-group"><label class="form-label">Value</label><input class="form-input" id="wlValue" placeholder="Enter value"></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="Whitelist.closeModal()">Cancel</button><button class="btn btn-primary" onclick="Whitelist.add()">➕ Add</button></div></div></div>`}
 };
-
-// ============ SETTINGS ============
-const Settings={
-render(){return`<div class="page-header"><div><h1 class="page-title">⚙️ Settings</h1></div></div><div class="card" style="padding:24px;margin-bottom:16px"><h3 style="margin:0 0 16px">🔑 Authentication</h3><p style="color:#888">Logged in with key: <code>${Utils.truncate(API.getKey(),8)}...</code></p><button class="btn btn-danger" onclick="Auth.logout()">🚪 Logout</button></div><div class="card" style="padding:24px"><h3 style="margin:0 0 16px">📋 Loader Script</h3><div style="background:#0a0a0f;padding:16px;border-radius:8px;overflow-x:auto;margin-bottom:12px"><code style="font-size:13px;word-break:break-all">loadstring(game:HttpGet("${CONFIG.API_BASE}/loader"))()</code></div><button class="btn btn-primary" onclick="Dashboard.copyLoader()">📋 Copy Loader</button></div>`}
-};
-
-// ============ APP ============
+const Settings={render(){return`<div class="page-header"><div><h1 class="page-title">⚙️ Settings</h1></div></div><div class="card" style="padding:24px;margin-bottom:16px"><h3 style="margin:0 0 16px">🔑 Authentication</h3><p style="color:#888">Key: <code>${Utils.truncate(API.getKey(),8)}...</code></p><button class="btn btn-danger" onclick="Auth.logout()">🚪 Logout</button></div><div class="card" style="padding:24px"><h3 style="margin:0 0 16px">📋 Loader</h3><div style="background:#0a0a0f;padding:16px;border-radius:8px;margin-bottom:12px;word-break:break-all"><code>loadstring(game:HttpGet("${CONFIG.API_BASE}/loader"))()</code></div><button class="btn btn-primary" onclick="Dashboard.copyLoader()">📋 Copy</button></div>`}};
 const App={
 currentPage:'dashboard',
-async init(){
-console.log('[App] Init');
-this.bindLogin();
-const btn=document.getElementById('loginBtn');
-if(btn){btn.disabled=true;btn.textContent='Checking...';}
-const ok=await Auth.check();
-if(btn){btn.disabled=false;btn.textContent='🚀 Login';}
-if(ok)this.showDashboard();else this.showLogin();
-},
-bindLogin(){
-const btn=document.getElementById('loginBtn');
-const input=document.getElementById('adminKeyInput');
-if(btn)btn.onclick=()=>this.login();
-if(input)input.onkeypress=e=>{if(e.key==='Enter')this.login()};
-},
-async login(){
-const input=document.getElementById('adminKeyInput');
-const btn=document.getElementById('loginBtn');
-const err=document.getElementById('loginError');
-const errText=document.getElementById('loginErrorText');
-const key=input?.value||'';
-if(!key){if(errText)errText.textContent='Enter key';if(err)err.classList.remove('hidden');return}
-if(err)err.classList.add('hidden');
-if(btn){btn.disabled=true;btn.textContent='⏳ Verifying...';}
-const r=await Auth.login(key);
-if(r.success){
-if(btn)btn.textContent='✅ Success';
-setTimeout(()=>this.showDashboard(),300);
-}else{
-if(errText)errText.textContent=r.error||'Failed';
-if(err)err.classList.remove('hidden');
-if(btn){btn.disabled=false;btn.textContent='🚀 Login';}
-}
-},
-showLogin(){
-document.getElementById('loginScreen')?.classList.remove('hidden');
-document.getElementById('dashboardScreen')?.classList.add('hidden');
-document.getElementById('adminKeyInput')?.focus();
-},
-showDashboard(){
-document.getElementById('loginScreen')?.classList.add('hidden');
-document.getElementById('dashboardScreen')?.classList.remove('hidden');
-this.bindNav();
-this.navigate('dashboard');
-},
-bindNav(){
-document.querySelectorAll('.nav-item[data-page]').forEach(el=>{
-el.onclick=()=>{
-this.navigate(el.dataset.page);
-// Close sidebar on mobile
-if(window.innerWidth<=768){
-document.getElementById('sidebar').classList.remove('open');
-document.getElementById('sidebarOverlay').classList.remove('open');
-}
+async init(){this.bindLogin();const btn=document.getElementById('loginBtn');if(btn){btn.disabled=true;btn.textContent='Checking...';}const ok=await Auth.check();if(btn){btn.disabled=false;btn.textContent='🚀 Login';}if(ok)this.showDashboard();else this.showLogin()},
+bindLogin(){const btn=document.getElementById('loginBtn');const input=document.getElementById('adminKeyInput');if(btn)btn.onclick=()=>this.login();if(input)input.onkeypress=e=>{if(e.key==='Enter')this.login()}},
+async login(){const input=document.getElementById('adminKeyInput');const btn=document.getElementById('loginBtn');const err=document.getElementById('loginError');const errText=document.getElementById('loginErrorText');const key=input?.value||'';if(!key){if(errText)errText.textContent='Enter key';if(err)err.classList.remove('hidden');return}if(err)err.classList.add('hidden');if(btn){btn.disabled=true;btn.textContent='⏳';}const r=await Auth.login(key);if(r.success){if(btn)btn.textContent='✅';setTimeout(()=>this.showDashboard(),300)}else{if(errText)errText.textContent=r.error||'Failed';if(err)err.classList.remove('hidden');if(btn){btn.disabled=false;btn.textContent='🚀 Login'}}},
+showLogin(){document.getElementById('loginScreen')?.classList.remove('hidden');document.getElementById('dashboardScreen')?.classList.add('hidden');document.getElementById('adminKeyInput')?.focus()},
+showDashboard(){document.getElementById('loginScreen')?.classList.add('hidden');document.getElementById('dashboardScreen')?.classList.remove('hidden');this.bindNav();this.navigate('dashboard')},
+bindNav(){document.querySelectorAll('.nav-item[data-page]').forEach(el=>{el.onclick=()=>{this.navigate(el.dataset.page);if(window.innerWidth<=768)toggleSidebar()}})},
+navigate(page){this.currentPage=page;document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.page===page));const c=document.getElementById('pageContent');if(!c)return;c.innerHTML='<div style="text-align:center;padding:60px"><div class="spinner"></div></div>';setTimeout(()=>{switch(page){case'dashboard':c.innerHTML=Dashboard.render();Dashboard.init();break;case'bans':c.innerHTML=Bans.render();Bans.init();break;case'logs':c.innerHTML=Logs.render();Logs.init();break;case'sessions':c.innerHTML=Sessions.render();Sessions.init();break;case'suspended':c.innerHTML=Suspended.render();Suspended.init();break;case'whitelist':c.innerHTML=Whitelist.render();Whitelist.init();break;case'settings':c.innerHTML=Settings.render();break;default:c.innerHTML=Dashboard.render();Dashboard.init()}},50)}
 };
-});
-},
-navigate(page){
-console.log('[App] Navigate:',page);
-this.currentPage=page;
-document.querySelectorAll('.nav-item').forEach(el=>{
-el.classList.toggle('active',el.dataset.page===page);
-});
-const c=document.getElementById('pageContent');
-if(!c)return;
-c.innerHTML='<div style="text-align:center;padding:60px"><div class="spinner"></div></div>';
-setTimeout(()=>{
-switch(page){
-case'dashboard':c.innerHTML=Dashboard.render();Dashboard.init();break;
-case'bans':c.innerHTML=Bans.render();Bans.init();break;
-case'logs':c.innerHTML=Logs.render();Logs.init();break;
-case'sessions':c.innerHTML=Sessions.render();Sessions.init();break;
-case'suspended':c.innerHTML=Suspended.render();Suspended.init();break;
-case'whitelist':c.innerHTML=Whitelist.render();Whitelist.init();break;
-case'settings':c.innerHTML=Settings.render();break;
-default:c.innerHTML=Dashboard.render();Dashboard.init();
-}
-},50);
-}
-};
-
 document.addEventListener('DOMContentLoaded',()=>App.init());
 </script>
 </body>
