@@ -17,7 +17,7 @@ code{font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-rad
 .spinner{width:24px;height:24px;border:3px solid rgba(255,255,255,0.1);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.text-trunc{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:bottom} /* Fixed truncated text */
+.text-trunc{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:bottom}
 
 /* === LAYOUT === */
 .app{display:flex;min-height:100vh}
@@ -45,11 +45,11 @@ code{font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-rad
 .form-input,.form-select{width:100%;padding:10px 14px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:14px;transition:border-color 0.2s}
 .form-input:focus{outline:none;border-color:var(--primary)}
 
-/* === TABLE (Optimized) === */
+/* === TABLE === */
 .table-container{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .table{width:100%;border-collapse:collapse;min-width:600px}
 .table th{text-align:left;padding:12px 16px;color:var(--text-muted);font-size:12px;text-transform:uppercase;border-bottom:1px solid var(--border);font-weight:600}
-.table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px;white-space:nowrap} /* Prevent wrap */
+.table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px;white-space:nowrap}
 .table tr:last-child td{border-bottom:none}
 .table tr:hover td{background:rgba(255,255,255,0.02)}
 
@@ -74,15 +74,11 @@ code{font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-rad
 .nav-item.active{color:#fff;background:rgba(139,92,246,0.1);border-left-color:var(--primary)}
 .nav-section{font-size:11px;text-transform:uppercase;color:#555;padding:20px 24px 8px;font-weight:700;letter-spacing:0.5px}
 
-/* === LOGIN === */
+/* === LOGIN & MODAL === */
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;position:fixed;inset:0;background:var(--bg);z-index:999}
 .login-card{width:100%;max-width:400px;padding:40px;text-align:center}
-
-/* === MOBILE NAV === */
 .mobile-toggle{display:none;position:fixed;top:16px;left:16px;z-index:100;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:8px;color:#fff}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:40;backdrop-filter:blur(2px)}
-
-/* === MODAL === */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:90;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:0.2s}
 .modal-overlay.active{opacity:1;pointer-events:auto}
 .modal{width:90%;max-width:500px;background:#16161e;border-radius:12px;border:1px solid var(--border);transform:scale(0.95);transition:0.2s;max-height:90vh;display:flex;flex-direction:column}
@@ -97,33 +93,28 @@ code{font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-rad
     .main-content{margin-left:0;padding:16px;padding-top:70px}
     .mobile-toggle{display:block}
     .sidebar-overlay.open{display:block}
-    
     .page-header{flex-direction:column;align-items:flex-start;gap:16px}
     .page-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .page-actions .btn{width:100%}
-    
-    .stat-grid{grid-template-columns:1fr 1fr}
-    .content-grid{grid-template-columns:1fr}
-    
+    .stat-grid{grid-template-columns:1fr 1fr!important}
+    .content-grid{grid-template-columns:1fr!important}
     .table{font-size:13px}
     .table th,.table td{padding:10px}
 }
 @media (max-width: 480px) {
-    .stat-grid{grid-template-columns:1fr}
+    .stat-grid{grid-template-columns:1fr!important}
 }
 </style>
 </head>
 <body>
 
-<!-- Mobile Header / Toggle -->
 <button class="mobile-toggle" onclick="App.toggleSidebar()">
     <svg class="icon" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>
 </button>
 
-<!-- Login Screen -->
 <div id="loginScreen" class="login-wrap">
     <div class="card login-card">
-        <div style="font-size:40px;margin-bottom:16px">ðŸ›¡ï¸</div>
+        <div style="font-size:40px;margin-bottom:16px">🛡️</div>
         <h2 style="margin-bottom:8px">Admin Access</h2>
         <p style="margin-bottom:24px">Enter security key to continue</p>
         <div id="loginError" class="badge badge-danger hidden" style="margin-bottom:16px;display:none">Invalid Key</div>
@@ -132,84 +123,40 @@ code{font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-rad
     </div>
 </div>
 
-<!-- Main App -->
 <div id="dashboardScreen" class="app hidden">
     <div class="sidebar-overlay" onclick="App.toggleSidebar()"></div>
-    
     <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-icon">ðŸ›¡ï¸</div>
-            <div class="logo-text">Shield</div>
-        </div>
-        
+        <div class="sidebar-header"><div class="logo-icon">🛡️</div><div class="logo-text">Shield</div></div>
         <div style="flex:1;overflow-y:auto">
             <div class="nav-section">Analytics</div>
-            <div class="nav-item active" data-page="dashboard">
-                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                Dashboard
-            </div>
-            <div class="nav-item" data-page="logs">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                Activity Logs
-            </div>
-
+            <div class="nav-item active" data-page="dashboard"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> Dashboard</div>
+            <div class="nav-item" data-page="logs"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Logs</div>
             <div class="nav-section">Management</div>
-            <div class="nav-item" data-page="sessions">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                Active Sessions
-            </div>
-            <div class="nav-item" data-page="bans">
-                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                Ban Manager
-            </div>
-            <div class="nav-item" data-page="suspended">
-                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="10" y1="15" x2="10" y2="9"></line><line x1="14" y1="15" x2="14" y2="9"></line></svg>
-                Suspended
-            </div>
-            <div class="nav-item" data-page="whitelist">
-                <svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                Whitelist
-            </div>
-
+            <div class="nav-item" data-page="sessions"><svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Sessions</div>
+            <div class="nav-item" data-page="bans"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg> Bans</div>
+            <div class="nav-item" data-page="suspended"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="10" y1="15" x2="10" y2="9"></line><line x1="14" y1="15" x2="14" y2="9"></line></svg> Suspended</div>
+            <div class="nav-item" data-page="whitelist"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Whitelist</div>
             <div class="nav-section">System</div>
-            <div class="nav-item" data-page="settings">
-                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                Settings
-            </div>
+            <div class="nav-item" data-page="settings"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Settings</div>
         </div>
-
         <div style="padding:16px;border-top:1px solid var(--border)">
-            <div class="nav-item" onclick="Auth.logout()" style="color:var(--danger)">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                Logout
-            </div>
+            <div class="nav-item" onclick="Auth.logout()" style="color:var(--danger)"><svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Logout</div>
         </div>
     </aside>
-
-    <main class="main-content">
-        <div id="pageContent">
-            <!-- Dynamic Content -->
-            <div style="text-align:center;padding:60px"><div class="spinner"></div></div>
-        </div>
-    </main>
+    <main class="main-content"><div id="pageContent"><div style="text-align:center;padding:60px"><div class="spinner"></div></div></div></main>
 </div>
 
-<!-- Modals -->
 <div id="generalModal" class="modal-overlay">
     <div class="modal">
-        <div class="modal-header">
-            <h3 class="modal-title" id="modalTitle">Title</h3>
-            <button class="btn btn-secondary btn-sm" onclick="App.closeModal()">âœ•</button>
-        </div>
+        <div class="modal-header"><h3 class="modal-title" id="modalTitle">Title</h3><button class="btn btn-secondary btn-sm" onclick="App.closeModal()">✕</button></div>
         <div class="modal-body" id="modalBody"></div>
         <div class="modal-footer" id="modalFooter"></div>
     </div>
 </div>
-
 <div id="toastContainer" class="toast-container"></div>
 
 <script>
-// === ICONS (SVG) ===
+// === ICONS & HELPERS ===
 const ICONS={
     refresh: `<svg class="icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>`,
     add: `<svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
@@ -218,69 +165,41 @@ const ICONS={
     pause: `<svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`,
     kill: `<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`
 };
-
 const CONFIG={API_BASE:window.location.origin};
-
 const Utils={
-    toast(msg,type='info'){
-        const c=document.getElementById('toastContainer');
-        const d=document.createElement('div');
-        d.className='toast';
-        d.style.borderLeft='4px solid '+(type==='success'?'var(--success)':type==='error'?'var(--danger)':'var(--primary)');
-        d.innerHTML=msg;
-        c.appendChild(d);
-        setTimeout(()=>d.remove(),3000);
-    },
+    toast(msg,type='info'){const c=document.getElementById('toastContainer'),d=document.createElement('div');d.className='toast';d.style.borderLeft='4px solid '+(type==='success'?'var(--success)':type==='error'?'var(--danger)':'var(--primary)');d.innerHTML=msg;c.appendChild(d);setTimeout(()=>d.remove(),3000)},
     fmtDate(d){try{return new Date(d).toLocaleString()}catch{return'-'}},
-    esc(s){if(!s)return'';return s.toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")},
-    trunc(s,l=15){
-        if(!s) return '-';
-        return `<span class="text-trunc" title="${s}">${s}</span>`;
-    }
+    esc(s){return s?String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"):'-'},
+    trunc(s,l=15){return s&&s.length>l?`<span class="text-trunc" title="${s}">${s}</span>`:s||'-'}
 };
-
 const API={
     async req(ep,opt={}){
-        try{
-            const k=localStorage.getItem('ak');
-            const r=await fetch(CONFIG.API_BASE+ep,{...opt,headers:{...opt.headers,'Content-Type':'application/json','x-admin-key':k}});
-            const d=await r.json();
-            return d;
-        }catch(e){return{success:false,error:e.message}}
+        try{const k=localStorage.getItem('ak'),r=await fetch(CONFIG.API_BASE+ep,{...opt,headers:{...opt.headers,'Content-Type':'application/json','x-admin-key':k}});return await r.json()}catch(e){return{success:false,error:e.message}}
     },
     get(e,p){return this.req(p?e+'?'+new URLSearchParams(p):e)},
-    post(e,b){return this.req(e,{method:'POST',body:JSON.stringify(b)})}
+    post(e,b){return this.req(e,{method:'POST',body:JSON.stringify(b)})},
+    delete(e,b){return this.req(e,{method:'DELETE',body:b?JSON.stringify(b):null})} // FIXED: METHOD DELETE
 };
 
 const Auth={
     async check(){const r=await API.get('/api/admin/stats');if(r.success)return true;localStorage.removeItem('ak');return false},
     async login(){
-        const k=document.getElementById('adminKeyInput').value;
-        const btn=document.getElementById('loginBtn');
+        const k=document.getElementById('adminKeyInput').value,btn=document.getElementById('loginBtn');
         btn.disabled=true;btn.innerHTML='Verifying...';
         localStorage.setItem('ak',k);
-        const ok=await this.check();
-        if(ok){
-            App.showDash();
-        }else{
-            document.getElementById('loginError').style.display='block';
-            btn.disabled=false;btn.innerHTML='Verify Access';
-        }
+        if(await this.check()) App.showDash();
+        else {document.getElementById('loginError').style.display='block';btn.disabled=false;btn.innerHTML='Verify Access'}
     },
     logout(){localStorage.removeItem('ak');location.reload()}
 };
 
 const Dashboard={
     async render(){
-        try {
+        try{
             const r=await API.get('/api/admin/stats');
-            if(!r.success) throw new Error("Failed to load stats");
+            if(!r.success) throw new Error("API Error");
             const s=r.stats||{};
-            return `
-            <div class="page-header">
-                <div class="page-title"><h1>Dashboard</h1><p>System Overview</p></div>
-                <div class="page-actions"><button class="btn btn-secondary" onclick="App.nav('dashboard')">${ICONS.refresh} Refresh</button></div>
-            </div>
+            return `<div class="page-header"><div class="page-title"><h1>Dashboard</h1><p>System Overview</p></div><div class="page-actions"><button class="btn btn-secondary" onclick="App.nav('dashboard')">${ICONS.refresh} Refresh</button></div></div>
             <div class="stat-grid">
                 <div class="card stat-card"><div class="stat-value">${s.sessions||0}</div><div class="stat-label">Active Sessions</div></div>
                 <div class="card stat-card"><div class="stat-value" style="color:var(--success)">${s.success||0}</div><div class="stat-label">Successful Loads</div></div>
@@ -288,290 +207,95 @@ const Dashboard={
                 <div class="card stat-card"><div class="stat-value" style="color:var(--warning)">${s.challenges||0}</div><div class="stat-label">Challenges</div></div>
             </div>
             <div class="content-grid">
-                <div class="card">
-                    <div class="card-header"><span class="card-title">Recent Activity</span></div>
-                    <div id="recentLogs" style="padding:16px"><div class="spinner"></div></div>
-                </div>
-                <div class="card">
-                    <div class="card-header"><span class="card-title">Quick Actions</span></div>
-                    <div style="padding:16px;display:flex;flex-direction:column;gap:8px">
-                        <button class="btn btn-secondary" onclick="App.nav('sessions')">Manage Sessions</button>
-                        <button class="btn btn-secondary" onclick="App.nav('bans')">Manage Bans</button>
-                        <button class="btn btn-danger" onclick="Dashboard.clearCache()">Clear Script Cache</button>
-                    </div>
-                </div>
+                <div class="card"><div class="card-header"><span class="card-title">Recent Activity</span></div><div id="recentLogs" style="padding:16px"><div class="spinner"></div></div></div>
+                <div class="card"><div class="card-header"><span class="card-title">Quick Actions</span></div><div style="padding:16px;display:flex;flex-direction:column;gap:8px"><button class="btn btn-secondary" onclick="App.nav('sessions')">Manage Sessions</button><button class="btn btn-secondary" onclick="App.nav('bans')">Manage Bans</button><button class="btn btn-danger" onclick="Dashboard.clearCache()">Clear Script Cache</button></div></div>
             </div>`;
-        } catch (e) {
-            return `<div style="text-align:center;padding:40px;color:var(--danger)">Error loading dashboard: ${e.message}<br><button class="btn btn-secondary" onclick="location.reload()">Retry</button></div>`;
-        }
+        }catch(e){return `<div style="padding:40px;text-align:center;color:var(--danger)">Failed to load stats. Check connection.</div>`}
     },
     async postRender(){
-        // This runs AFTER HTML is inserted into DOM
-        try {
-            const r=await API.get('/api/admin/logs',{limit:5});
-            const logsEl = document.getElementById('recentLogs');
-            if(logsEl) {
-                logsEl.innerHTML=(r.logs||[]).map(l=>`
-                    <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:8px 0;font-size:13px">
-                        <div><span style="color:${l.success?'var(--success)':'var(--danger)'}">●</span> ${Utils.esc(l.action)}</div>
-                        <div style="color:#666">${Utils.trunc(l.ip,12)}</div>
-                    </div>`).join('')||'<p style="text-align:center">No activity</p>';
-            }
-        } catch (e) {
-            console.error("Failed to load logs:", e);
-        }
+        const r=await API.get('/api/admin/logs',{limit:5});
+        document.getElementById('recentLogs').innerHTML=(r.logs||[]).map(l=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:8px 0;font-size:13px"><div><span style="color:${l.success?'var(--success)':'var(--danger)'}">●</span> ${Utils.esc(l.action)}</div><div style="color:#666">${Utils.trunc(l.ip,12)}</div></div>`).join('')||'<p style="text-align:center">No activity</p>';
     },
     async clearCache(){if(confirm('Clear cache?')){await API.post('/api/admin/cache/clear');Utils.toast('Cache cleared','success')}}
-};
-
-const Sessions={
-    async render(){
-        const r=await API.get('/api/admin/sessions');
-        const list=r.sessions||[];
-        return `
-        <div class="page-header">
-            <div class="page-title"><h1>Sessions</h1><p>${list.length} Active Users</p></div>
-            <div class="page-actions">
-                <button class="btn btn-secondary" onclick="App.nav('sessions')">${ICONS.refresh} Refresh</button>
-                <button class="btn btn-danger" onclick="Sessions.killAll()">${ICONS.kill} Kill All</button>
-            </div>
-        </div>
-        <div class="card table-container">
-            <table class="table">
-                <thead><tr><th>ID</th><th>User</th><th>HWID</th><th>IP</th><th>Action</th></tr></thead>
-                <tbody>${list.map(s=>`<tr>
-                    <td><code>${Utils.trunc(s.sessionId,8)}</code></td>
-                    <td>${s.userId||'-'}</td>
-                    <td><code>${Utils.trunc(s.hwid,10)}</code></td>
-                    <td>${Utils.trunc(s.ip,12)}</td>
-                    <td>
-                        <button class="btn btn-secondary btn-sm" onclick="Sessions.suspend('${s.sessionId}')">${ICONS.pause}</button>
-                        <button class="btn btn-danger btn-sm" onclick="Sessions.kill('${s.sessionId}')">${ICONS.kill}</button>
-                    </td>
-                </tr>`).join('') || '<tr><td colspan="5" style="text-align:center">No sessions</td></tr>'}</tbody>
-            </table>
-        </div>`;
-    },
-    async kill(sid){if(confirm('Kill?')){await API.post('/api/admin/kill-session',{sessionId:sid});App.nav('sessions')}},
-    async killAll(){if(confirm('Kill ALL?')){await API.post('/api/admin/sessions/clear');App.nav('sessions')}},
-    suspend(sid){
-        App.openModal('Suspend Session', `
-            <div class="form-group"><label class="form-label">Duration (sec, empty=perm)</label><input id="suspDur" class="form-input" type="number"></div>
-            <div class="form-group"><label class="form-label">Reason</label><input id="suspRes" class="form-input" value="Suspended by admin"></div>
-        `, `<button class="btn btn-warning" onclick="Suspended.doAdd('session','${sid}')">Suspend</button>`);
-    }
 };
 
 const Bans={
     async render(){
         const r=await API.get('/api/admin/bans');
-        const list=r.bans||[];
-        return `
-        <div class="page-header">
-            <div class="page-title"><h1>Bans</h1><p>Blocked Users</p></div>
-            <div class="page-actions">
-                <button class="btn btn-secondary" onclick="App.nav('bans')">${ICONS.refresh}</button>
-                <button class="btn btn-primary" onclick="Bans.modal()">${ICONS.add} Ban</button>
-            </div>
-        </div>
-        <div class="card table-container">
-            <table class="table">
-                <thead><tr><th>Target</th><th>Reason</th><th>Date</th><th>Action</th></tr></thead>
-                <tbody>${list.map(b=>`<tr>
-                    <td><code>${Utils.trunc(b.hwid||b.playerId||b.ip, 20)}</code></td>
-                    <td>${Utils.trunc(b.reason)}</td>
-                    <td>${Utils.fmtDate(b.ts)}</td>
-                    <td><button class="btn btn-danger btn-sm" onclick="Bans.del('${b.banId}')">${ICONS.trash}</button></td>
-                </tr>`).join('') || '<tr><td colspan="4" style="text-align:center">No bans</td></tr>'}</tbody>
-            </table>
-        </div>`;
+        return `<div class="page-header"><div class="page-title"><h1>Bans</h1><p>Blocked Users</p></div><div class="page-actions"><button class="btn btn-secondary" onclick="App.nav('bans')">${ICONS.refresh}</button><button class="btn btn-primary" onclick="Bans.modal()">${ICONS.add} Ban</button></div></div><div class="card table-container"><table class="table"><thead><tr><th>Target</th><th>Reason</th><th>Date</th><th>Action</th></tr></thead><tbody>${(r.bans||[]).map(b=>`<tr><td><code>${Utils.trunc(b.hwid||b.playerId||b.ip,20)}</code></td><td>${Utils.trunc(b.reason)}</td><td>${Utils.fmtDate(b.ts)}</td><td><button class="btn btn-danger btn-sm" onclick="Bans.del('${b.banId}')">${ICONS.trash}</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center">No bans</td></tr>'}</tbody></table></div>`;
     },
-    async del(id){if(confirm('Unban?')){await API.delete('/api/admin/bans/'+id);App.nav('bans')}},
-    modal(){
-        App.openModal('Add Ban', `
-            <div class="form-group"><label class="form-label">HWID / UserID / IP</label><input id="banVal" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Reason</label><input id="banRes" class="form-input" value="Manual Ban"></div>
-        `, `<button class="btn btn-danger" onclick="Bans.add()">Ban User</button>`);
-    },
+    async del(id){if(confirm('Unban?')){await API.delete('/api/admin/bans/'+id);App.nav('bans');Utils.toast('Unbanned','success')}},
+    modal(){App.openModal('Add Ban',`<div class="form-group"><label class="form-label">HWID / UserID / IP</label><input id="banVal" class="form-input"></div><div class="form-group"><label class="form-label">Reason</label><input id="banRes" class="form-input" value="Manual Ban"></div>`,`<button class="btn btn-danger" onclick="Bans.add()">Ban User</button>`)},
     async add(){
-        const v=document.getElementById('banVal').value;
-        const r=document.getElementById('banRes').value;
+        const v=document.getElementById('banVal').value,r=document.getElementById('banRes').value;
         if(!v)return;
-        await API.post('/api/admin/bans',{hwid:v,reason:r});
+        await API.post('/api/admin/bans',{hwid:v,reason:r}); // Backend smart detect
         App.closeModal();App.nav('bans');
     }
+};
+
+const Sessions={
+    async render(){
+        const r=await API.get('/api/admin/sessions');
+        return `<div class="page-header"><div class="page-title"><h1>Sessions</h1><p>${(r.sessions||[]).length} Active</p></div><div class="page-actions"><button class="btn btn-secondary" onclick="App.nav('sessions')">${ICONS.refresh}</button><button class="btn btn-danger" onclick="Sessions.killAll()">${ICONS.kill} Kill All</button></div></div><div class="card table-container"><table class="table"><thead><tr><th>ID</th><th>User</th><th>HWID</th><th>Action</th></tr></thead><tbody>${(r.sessions||[]).map(s=>`<tr><td><code>${Utils.trunc(s.sessionId,8)}</code></td><td>${s.userId||'-'}</td><td><code>${Utils.trunc(s.hwid,10)}</code></td><td><button class="btn btn-secondary btn-sm" onclick="Sessions.suspend('${s.sessionId}')">${ICONS.pause}</button> <button class="btn btn-danger btn-sm" onclick="Sessions.kill('${s.sessionId}')">${ICONS.kill}</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center">No sessions</td></tr>'}</tbody></table></div>`;
+    },
+    async kill(sid){if(confirm('Kill?')){await API.post('/api/admin/kill-session',{sessionId:sid});App.nav('sessions')}},
+    async killAll(){if(confirm('Kill ALL?')){await API.post('/api/admin/sessions/clear');App.nav('sessions')}},
+    suspend(sid){App.openModal('Suspend Session',`<div class="form-group"><label class="form-label">Duration (sec, empty=perm)</label><input id="suspDur" class="form-input" type="number"></div><div class="form-group"><label class="form-label">Reason</label><input id="suspRes" class="form-input" value="Suspended by admin"></div>`,`<button class="btn btn-warning" onclick="Suspended.doAdd('session','${sid}')">Suspend</button>`)}
 };
 
 const Suspended={
     async render(){
         const r=await API.get('/api/admin/suspended');
-        const list=r.suspended||[];
-        return `
-        <div class="page-header">
-            <div class="page-title"><h1>Suspended</h1><p>Temporarily Disabled</p></div>
-            <div class="page-actions"><button class="btn btn-primary" onclick="Suspended.modal()">${ICONS.add} Suspend</button></div>
-        </div>
-        <div class="card table-container">
-            <table class="table">
-                <thead><tr><th>Type</th><th>Value</th><th>Expires</th><th>Action</th></tr></thead>
-                <tbody>${list.map(s=>`<tr>
-                    <td><span class="badge badge-info">${s.type}</span></td>
-                    <td><code>${Utils.trunc(s.value,15)}</code></td>
-                    <td>${s.expiresAt?Utils.fmtDate(s.expiresAt):'Permanent'}</td>
-                    <td><button class="btn btn-success btn-sm" onclick="Suspended.del('${s.type}','${s.value}')">${ICONS.play} Unsuspend</button></td>
-                </tr>`).join('') || '<tr><td colspan="4" style="text-align:center">No suspended users</td></tr>'}</tbody>
-            </table>
-        </div>`;
+        return `<div class="page-header"><div class="page-title"><h1>Suspended</h1><p>Disabled</p></div><div class="page-actions"><button class="btn btn-primary" onclick="Suspended.modal()">${ICONS.add} Suspend</button></div></div><div class="card table-container"><table class="table"><thead><tr><th>Type</th><th>Value</th><th>Expires</th><th>Action</th></tr></thead><tbody>${(r.suspended||[]).map(s=>`<tr><td><span class="badge badge-info">${s.type}</span></td><td><code>${Utils.trunc(s.value,15)}</code></td><td>${s.expiresAt?Utils.fmtDate(s.expiresAt):'Permanent'}</td><td><button class="btn btn-success btn-sm" onclick="Suspended.del('${s.type}','${s.value}')">${ICONS.play} Unsuspend</button></td></tr>`).join('')}</tbody></table></div>`;
     },
     async del(t,v){if(confirm('Unsuspend?')){await API.post('/api/admin/unsuspend',{type:t,value:v});App.nav('suspended')}},
-    modal(){
-        App.openModal('Add Suspend', `
-            <div class="form-group"><label class="form-label">Type</label><select id="suspType" class="form-select"><option value="userId">User ID</option><option value="hwid">HWID</option></select></div>
-            <div class="form-group"><label class="form-label">Value</label><input id="suspVal" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Duration (sec)</label><input id="suspDur" class="form-input" type="number" placeholder="Empty = Permanent"></div>
-        `, `<button class="btn btn-warning" onclick="Suspended.add()">Suspend</button>`);
-    },
-    async add(){
-        const t=document.getElementById('suspType').value;
-        const v=document.getElementById('suspVal').value;
-        this.doAdd(t,v);
-    },
-    async doAdd(t,v){
-        const d=document.getElementById('suspDur').value;
-        const r=document.getElementById('suspRes')?.value;
-        await API.post('/api/admin/suspend',{type:t,value:v,duration:d,reason:r});
-        App.closeModal();App.nav('suspended');
-    }
+    modal(){App.openModal('Add Suspend',`<div class="form-group"><label class="form-label">Type</label><select id="suspType" class="form-select"><option value="userId">User ID</option><option value="hwid">HWID</option></select></div><div class="form-group"><label class="form-label">Value</label><input id="suspVal" class="form-input"></div><div class="form-group"><label class="form-label">Duration (sec)</label><input id="suspDur" class="form-input" type="number" placeholder="Empty = Permanent"></div>`,`<button class="btn btn-warning" onclick="Suspended.add()">Suspend</button>`)},
+    async add(){const t=document.getElementById('suspType').value,v=document.getElementById('suspVal').value;this.doAdd(t,v)},
+    async doAdd(t,v){const d=document.getElementById('suspDur').value,r=document.getElementById('suspRes')?.value;await API.post('/api/admin/suspend',{type:t,value:v,duration:d,reason:r});App.closeModal();App.nav('suspended')}
 };
 
 const Whitelist={
     async render(){
         const r=await API.get('/api/admin/whitelist');
-        const w=r.whitelist||{};
-        const list=[...(w.userIds||[]).map(v=>({t:'userId',v})),...(w.hwids||[]).map(v=>({t:'hwid',v})),...(w.ips||[]).map(v=>({t:'ip',v}))];
-        return `
-        <div class="page-header">
-            <div class="page-title"><h1>Whitelist</h1><p>Bypass Protection</p></div>
-            <div class="page-actions"><button class="btn btn-primary" onclick="Whitelist.modal()">${ICONS.add} Add</button></div>
-        </div>
-        <div class="card table-container">
-            <table class="table">
-                <thead><tr><th>Type</th><th>Value</th><th>Action</th></tr></thead>
-                <tbody>${list.map(i=>`<tr><td>${i.t}</td><td><code>${i.v}</code></td><td><button class="btn btn-danger btn-sm" onclick="Whitelist.del('${i.t}','${i.v}')">${ICONS.trash}</button></td></tr>`).join('') || '<tr><td colspan="3" style="text-align:center">No whitelist</td></tr>'}</tbody>
-            </table>
-        </div>`;
+        const w=r.whitelist||{},list=[...(w.userIds||[]).map(v=>({t:'userId',v})),...(w.hwids||[]).map(v=>({t:'hwid',v})),...(w.ips||[]).map(v=>({t:'ip',v}))];
+        return `<div class="page-header"><div class="page-title"><h1>Whitelist</h1><p>Bypass</p></div><div class="page-actions"><button class="btn btn-primary" onclick="Whitelist.modal()">${ICONS.add} Add</button></div></div><div class="card table-container"><table class="table"><thead><tr><th>Type</th><th>Value</th><th>Action</th></tr></thead><tbody>${list.map(i=>`<tr><td>${i.t}</td><td><code>${i.v}</code></td><td><button class="btn btn-danger btn-sm" onclick="Whitelist.del('${i.t}','${i.v}')">${ICONS.trash}</button></td></tr>`).join('')||'<tr><td colspan="3" style="text-align:center">No whitelist</td></tr>'}</tbody></table></div>`;
     },
     async del(t,v){if(confirm('Remove?')){await API.post('/api/admin/whitelist/remove',{type:t,value:v});App.nav('whitelist')}},
-    modal(){
-        App.openModal('Add Whitelist', `
-            <div class="form-group"><label class="form-label">Type</label><select id="wlType" class="form-select"><option value="userId">User ID</option><option value="hwid">HWID</option><option value="ip">IP</option></select></div>
-            <div class="form-group"><label class="form-label">Value</label><input id="wlVal" class="form-input"></div>
-        `, `<button class="btn btn-primary" onclick="Whitelist.add()">Add</button>`);
-    },
-    async add(){
-        const t=document.getElementById('wlType').value;
-        const v=document.getElementById('wlVal').value;
-        if(v){await API.post('/api/admin/whitelist',{type:t,value:v});App.closeModal();App.nav('whitelist')}
-    }
+    modal(){App.openModal('Add Whitelist',`<div class="form-group"><label class="form-label">Type</label><select id="wlType" class="form-select"><option value="userId">User ID</option><option value="hwid">HWID</option><option value="ip">IP</option></select></div><div class="form-group"><label class="form-label">Value</label><input id="wlVal" class="form-input"></div>`,`<button class="btn btn-primary" onclick="Whitelist.add()">Add</button>`)},
+    async add(){const t=document.getElementById('wlType').value,v=document.getElementById('wlVal').value;if(v){await API.post('/api/admin/whitelist',{type:t,value:v});App.closeModal();App.nav('whitelist')}}
 };
 
-const Settings={
-    render(){
-        return `
-        <div class="page-header"><div class="page-title"><h1>Settings</h1></div></div>
-        <div class="card" style="padding:24px">
-            <h3>Loader Script</h3>
-            <p style="margin-bottom:16px;font-size:13px">Copy this into your executor:</p>
-            <code style="display:block;padding:16px;background:#000;border:1px solid var(--border);border-radius:8px;word-break:break-all">loadstring(game:HttpGet("${CONFIG.API_BASE}/loader"))()</code>
-        </div>`;
-    }
-};
+const Logs={async render(){const r=await API.get('/api/admin/logs',{limit:50});return `<div class="page-header"><div class="page-title"><h1>Logs</h1></div><div class="page-actions"><button class="btn btn-secondary" onclick="App.nav('logs')">${ICONS.refresh} Refresh</button></div></div><div class="card table-container"><table class="table"><thead><tr><th>Time</th><th>Action</th><th>IP</th><th>Status</th></tr></thead><tbody>${(r.logs||[]).map(l=>`<tr><td>${Utils.fmtDate(l.ts)}</td><td>${Utils.esc(l.action)}</td><td><code>${Utils.trunc(l.ip,12)}</code></td><td>${l.success?'<span class="badge badge-success">OK</span>':'<span class="badge badge-danger">FAIL</span>'}</td></tr>`).join('')}</tbody></table></div>`}};
+const Settings={render(){return `<div class="page-header"><div class="page-title"><h1>Settings</h1></div></div><div class="card" style="padding:24px"><h3>Loader Script</h3><p style="margin-bottom:16px;font-size:13px">Copy this into your executor:</p><code style="display:block;padding:16px;background:#000;border:1px solid var(--border);border-radius:8px;word-break:break-all">loadstring(game:HttpGet("${CONFIG.API_BASE}/loader"))()</code></div>`}};
 
-const Logs={
-    async render(){
-        const r=await API.get('/api/admin/logs',{limit:50});
-        return `
-        <div class="page-header">
-            <div class="page-title"><h1>Logs</h1></div>
-            <div class="page-actions"><button class="btn btn-secondary" onclick="App.nav('logs')">${ICONS.refresh} Refresh</button></div>
-        </div>
-        <div class="card table-container">
-            <table class="table">
-                <thead><tr><th>Time</th><th>Action</th><th>IP</th><th>Status</th></tr></thead>
-                <tbody>${(r.logs||[]).map(l=>`<tr>
-                    <td>${Utils.fmtDate(l.ts)}</td>
-                    <td>${Utils.esc(l.action)}</td>
-                    <td><code>${Utils.trunc(l.ip,12)}</code></td>
-                    <td>${l.success?'<span class="badge badge-success">OK</span>':'<span class="badge badge-danger">FAIL</span>'}</td>
-                </tr>`).join('')}</tbody>
-            </table>
-        </div>`;
-    }
-};
-
-// === CORE APP ===
 const App={
     async init(){
-        this.bindEvents();
-        if(localStorage.getItem('ak')){
-            if(await Auth.check()) this.showDash();
-            else document.getElementById('loginScreen').style.display='flex';
-        } else {
-            document.getElementById('loginScreen').style.display='flex';
-        }
-    },
-    bindEvents(){
         document.getElementById('loginBtn').onclick=Auth.login;
-        document.querySelectorAll('.nav-item').forEach(el=>{
-            el.onclick=()=>{
-                if(window.innerWidth<=768) this.toggleSidebar();
-                this.nav(el.dataset.page);
-            }
-        });
+        document.querySelectorAll('.nav-item').forEach(el=>{el.onclick=()=>{if(window.innerWidth<=768)this.toggleSidebar();this.nav(el.dataset.page)}});
+        if(localStorage.getItem('ak')){if(await Auth.check())this.showDash();else document.getElementById('loginScreen').style.display='flex'}else{document.getElementById('loginScreen').style.display='flex'}
     },
-    toggleSidebar(){
-        document.querySelector('.sidebar').classList.toggle('open');
-        document.querySelector('.sidebar-overlay').classList.toggle('active');
-    },
-    showDash(){
-        document.getElementById('loginScreen').style.display='none';
-        document.getElementById('dashboardScreen').classList.remove('hidden');
-        this.nav('dashboard');
-    },
+    toggleSidebar(){document.querySelector('.sidebar').classList.toggle('open');document.querySelector('.sidebar-overlay').classList.toggle('active')},
+    showDash(){document.getElementById('loginScreen').style.display='none';document.getElementById('dashboardScreen').classList.remove('hidden');this.nav('dashboard')},
     async nav(page){
         document.querySelectorAll('.nav-item').forEach(e=>e.classList.toggle('active',e.dataset.page===page));
-        const c=document.getElementById('pageContent');
-        c.innerHTML='<div style="text-align:center;padding:40px"><div class="spinner"></div></div>';
-        
+        const c=document.getElementById('pageContent');c.innerHTML='<div style="text-align:center;padding:40px"><div class="spinner"></div></div>';
         let html='';
-        try {
-            if(page==='dashboard') { html=await Dashboard.render(); }
-            else if(page==='sessions') html=await Sessions.render();
-            else if(page==='bans') html=await Bans.render();
-            else if(page==='suspended') html=await Suspended.render();
-            else if(page==='whitelist') html=await Whitelist.render();
-            else if(page==='logs') html=await Logs.render();
-            else if(page==='settings') html=Settings.render();
-        } catch (e) {
-            html=`<div style="padding:20px;text-align:center;color:var(--danger)">Error loading page: ${e.message}</div>`;
-        }
-        
+        try{
+            if(page==='dashboard'){html=await Dashboard.render();}
+            else if(page==='sessions')html=await Sessions.render();
+            else if(page==='bans')html=await Bans.render();
+            else if(page==='suspended')html=await Suspended.render();
+            else if(page==='whitelist')html=await Whitelist.render();
+            else if(page==='logs')html=await Logs.render();
+            else if(page==='settings')html=Settings.render();
+        }catch(e){html=`<div style="padding:20px;text-align:center;color:var(--danger)">Error: ${e.message}</div>`}
         c.innerHTML=html;
-
-        // Post-render init (fix for dashboard chart/logs)
-        if(page==='dashboard' && Dashboard.postRender) await Dashboard.postRender();
+        if(page==='dashboard'&&Dashboard.postRender)await Dashboard.postRender();
     },
-    openModal(title, body, footer){
-        document.getElementById('modalTitle').innerText=title;
-        document.getElementById('modalBody').innerHTML=body;
-        document.getElementById('modalFooter').innerHTML=footer;
-        document.getElementById('generalModal').classList.add('active');
-    },
-    closeModal(){
-        document.getElementById('generalModal').classList.remove('active');
-    }
+    openModal(t,b,f){document.getElementById('modalTitle').innerText=t;document.getElementById('modalBody').innerHTML=b;document.getElementById('modalFooter').innerHTML=f;document.getElementById('generalModal').classList.add('active')},
+    closeModal(){document.getElementById('generalModal').classList.remove('active')}
 };
-
 document.addEventListener('DOMContentLoaded',()=>App.init());
 </script>
 </body>
