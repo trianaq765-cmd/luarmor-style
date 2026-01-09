@@ -731,9 +731,36 @@ app.post('/api/ban', async (req, res) => {
 // Admin auth middleware
 const adminAuth = (req, res, next) => {
     const key = req.headers['x-admin-key'] || req.query.key;
-    if (!key || !secureCompare(key, config.ADMIN_KEY)) {
-        return res.status(403).json({ error: 'Unauthorized' });
+    
+    // Debug logging (hapus setelah fix)
+    console.log('[Admin Auth] Key received:', key ? 'Yes (' + key.length + ' chars)' : 'No');
+    console.log('[Admin Auth] Config key exists:', !!config.ADMIN_KEY);
+    
+    if (!key) {
+        return res.status(403).json({ 
+            success: false,
+            error: 'Unauthorized' 
+        });
     }
+    
+    if (!config.ADMIN_KEY) {
+        console.error('[Admin Auth] ADMIN_KEY not set in config!');
+        return res.status(500).json({ 
+            success: false,
+            error: 'Server misconfigured' 
+        });
+    }
+    
+    const isValid = secureCompare(key, config.ADMIN_KEY);
+    console.log('[Admin Auth] Key valid:', isValid);
+    
+    if (!isValid) {
+        return res.status(403).json({ 
+            success: false,
+            error: 'Unauthorized' 
+        });
+    }
+    
     next();
 };
 
