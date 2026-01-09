@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Access Denied</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+        }
+        
+        .bg-orb-1 {
+            width: 500px; height: 500px;
+            background: #8b5cf6;
+            top: -200px; left: -200px;
+        }
+        
+        .bg-orb-2 {
+            width: 400px; height: 400px;
+            background: #ef4444;
+            bottom: -150px; right: -150px;
+        }
+        
+        .container {
+            text-align: center;
+            z-index: 1;
+            padding: 40px;
+        }
+        
+        .shield {
+            font-size: 100px;
+            margin-bottom: 30px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: #71717a;
+            margin-bottom: 30px;
+        }
+        
+        .code-box {
+            display: inline-block;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 16px 32px;
+        }
+        
+        .code {
+            font-family: monospace;
+            font-size: 18px;
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    
+    <div class="container">
+        <div class="shield">🛡️</div>
+        <h1 class="title">Access Denied</h1>
+        <p class="subtitle">Browser and bot access is not permitted.</p>
+        <div class="code-box">
+            <span class="code">HTTP 403 | Forbidden</span>
+        </div>
+    </div>
+</body>
+</html>
