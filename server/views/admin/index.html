@@ -1,525 +1,376 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#0a0a0f">
-    <title>Admin Panel | Script Shield</title>
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
-    <!-- Styles -->
-    <link rel="stylesheet" href="/admin/css/main.css">
-    
-    <!-- Additional inline styles for elements not in CSS files -->
-    <style>
-        /* Page specific styles */
-        .page-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: var(--space-8);
-            flex-wrap: wrap;
-            gap: var(--space-4);
-        }
-        
-        .page-title {
-            font-size: var(--text-3xl);
-            font-weight: 700;
-            margin-bottom: var(--space-1);
-        }
-        
-        .page-subtitle {
-            color: var(--text-muted);
-            font-size: var(--text-sm);
-            margin: 0;
-        }
-        
-        /* Quick actions */
-        .quick-actions {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-3);
-        }
-        
-        .btn-block {
-            width: 100%;
-            justify-content: flex-start;
-        }
-        
-        /* Activity items */
-        .activity-item {
-            display: flex;
-            align-items: center;
-            gap: var(--space-4);
-            padding: var(--space-4);
-            border-radius: var(--radius-lg);
-            transition: background var(--transition-fast);
-        }
-        
-        .activity-item:hover {
-            background: rgba(139, 92, 246, 0.05);
-        }
-        
-        .activity-item + .activity-item {
-            border-top: 1px solid var(--border-secondary);
-        }
-        
-        .activity-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            font-size: var(--text-sm);
-        }
-        
-        .activity-icon.success {
-            background: var(--success-bg);
-            color: var(--success);
-        }
-        
-        .activity-icon.danger {
-            background: var(--danger-bg);
-            color: var(--danger);
-        }
-        
-        .activity-content {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .activity-title {
-            font-size: var(--text-sm);
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-        }
-        
-        .activity-meta {
-            font-size: var(--text-xs);
-            color: var(--text-muted);
-        }
-        
-        /* Cell stack for multiple badges */
-        .cell-stack {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-1);
-        }
-        
-        /* Table actions */
-        .table-actions {
-            display: flex;
-            gap: var(--space-2);
-        }
-        
-        /* Search input wrapper */
-        .search-input-wrapper {
-            position: relative;
-        }
-        
-        .search-input-wrapper .search-icon {
-            position: absolute;
-            left: var(--space-3);
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            pointer-events: none;
-        }
-        
-        /* Toggle switch */
-        .toggle-label {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-            cursor: pointer;
-        }
-        
-        .toggle-input {
-            display: none;
-        }
-        
-        .toggle-switch {
-            width: 44px;
-            height: 24px;
-            background: var(--bg-elevated);
-            border: 1px solid var(--border-secondary);
-            border-radius: var(--radius-full);
-            position: relative;
-            transition: all var(--transition-fast);
-        }
-        
-        .toggle-switch::after {
-            content: '';
-            width: 18px;
-            height: 18px;
-            background: var(--text-muted);
-            border-radius: 50%;
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            transition: all var(--transition-fast);
-        }
-        
-        .toggle-input:checked + .toggle-switch {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
-        
-        .toggle-input:checked + .toggle-switch::after {
-            background: white;
-            left: calc(100% - 20px);
-        }
-        
-        /* Code block */
-        .code-block {
-            position: relative;
-            background: var(--bg-input);
-            border: 1px solid var(--border-secondary);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-        }
-        
-        .code-block pre {
-            margin: 0;
-            padding: var(--space-4);
-            padding-right: 100px;
-            overflow-x: auto;
-            border: none;
-            background: transparent;
-        }
-        
-        .code-block code {
-            background: transparent;
-            padding: 0;
-            color: var(--accent);
-        }
-        
-        .code-block .copy-code-btn {
-            position: absolute;
-            top: var(--space-2);
-            right: var(--space-2);
-        }
-        
-        /* Info list */
-        .info-list {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-4);
-        }
-        
-        .info-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: var(--space-3) 0;
-            border-bottom: 1px solid var(--border-secondary);
-        }
-        
-        .info-item:last-child {
-            border-bottom: none;
-        }
-        
-        .info-label {
-            color: var(--text-muted);
-            font-size: var(--text-sm);
-        }
-        
-        .info-value {
-            color: var(--text-primary);
-            font-size: var(--text-sm);
-            font-family: var(--font-mono);
-        }
-        
-        /* Input with button */
-        .input-with-button {
-            display: flex;
-            gap: var(--space-2);
-        }
-        
-        .input-with-button .form-input {
-            flex: 1;
-        }
-        
-        /* Login screen */
-        .login-screen {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: var(--space-6);
-            position: relative;
-        }
-        
-        .login-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border-secondary);
-            border-radius: var(--radius-2xl);
-            padding: var(--space-10);
-            width: 100%;
-            max-width: 420px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .login-logo {
-            width: 64px;
-            height: 64px;
-            background: var(--gradient-primary);
-            border-radius: var(--radius-xl);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            margin: 0 auto var(--space-6);
-            box-shadow: var(--shadow-glow-lg);
-        }
-        
-        .login-title {
-            text-align: center;
-            font-size: var(--text-2xl);
-            margin-bottom: var(--space-2);
-        }
-        
-        .login-subtitle {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: var(--text-sm);
-            margin-bottom: var(--space-8);
-        }
-        
-        .login-error {
-            background: var(--danger-bg);
-            color: var(--danger);
-            padding: var(--space-3) var(--space-4);
-            border-radius: var(--radius-lg);
-            font-size: var(--text-sm);
-            margin-bottom: var(--space-4);
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-        }
-        
-        .login-footer {
-            text-align: center;
-            margin-top: var(--space-6);
-            color: var(--text-muted);
-            font-size: var(--text-xs);
-        }
-        
-        /* Mobile menu button */
-        .mobile-menu-btn {
-            display: none;
-        }
-        
-        @media (max-width: 1024px) {
-            .mobile-menu-btn {
-                display: flex;
-            }
-        }
-        
-        /* Sidebar overlay for mobile */
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: calc(var(--z-sticky) - 1);
-        }
-        
-        @media (max-width: 1024px) {
-            .sidebar.open + .sidebar-overlay {
-                display: block;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Panel</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0a0f;color:#fff;min-height:100vh}
+.hidden{display:none!important}
+.spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.1);border-top-color:#8b5cf6;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.card{background:rgba(20,20,35,0.8);border:1px solid rgba(255,255,255,0.1);border-radius:12px;backdrop-filter:blur(10px)}
+.btn{padding:10px 16px;border:none;border-radius:8px;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.btn-primary{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff}
+.btn-secondary{background:rgba(255,255,255,0.1);color:#fff}
+.btn-secondary:hover{background:rgba(255,255,255,0.2)}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-success{background:#22c55e;color:#fff}
+.form-input{width:100%;padding:12px 16px;background:rgba(15,15,25,0.9);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:14px}
+.form-input:focus{outline:none;border-color:#8b5cf6}
+.toast-container{position:fixed;bottom:20px;right:20px;z-index:9999}
+.toast{background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 16px;margin-top:10px;animation:slideIn 0.3s}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{background:rgba(20,20,35,0.9);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:40px;width:100%;max-width:400px}
+.login-title{font-size:24px;text-align:center;margin-bottom:8px}
+.login-subtitle{color:#888;text-align:center;margin-bottom:24px;font-size:14px}
+.login-error{background:rgba(239,68,68,0.2);border:1px solid #ef4444;color:#ef4444;padding:12px;border-radius:8px;margin-bottom:16px;font-size:14px}
+.app{display:flex;min-height:100vh}
+.sidebar{width:250px;background:rgba(15,15,25,0.95);border-right:1px solid rgba(255,255,255,0.1);padding:20px;position:fixed;height:100vh;overflow-y:auto}
+.sidebar-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px}
+.sidebar-logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.sidebar-logo-text{font-size:18px;font-weight:700}
+.nav-section{margin-bottom:24px}
+.nav-section-title{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding:0 12px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#888;cursor:pointer;transition:all 0.2s;margin-bottom:4px}
+.nav-item:hover{background:rgba(139,92,246,0.1);color:#fff}
+.nav-item.active{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff}
+.main-content{flex:1;margin-left:250px;padding:24px}
+.page-content{max-width:1200px;margin:0 auto}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:12px 16px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.1)}
+.table th{font-size:12px;color:#888;text-transform:uppercase;font-weight:600}
+.table tr:hover{background:rgba(139,92,246,0.05)}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500}
+.badge-success{background:rgba(34,197,94,0.2);color:#22c55e}
+.badge-danger{background:rgba(239,68,68,0.2);color:#ef4444}
+.badge-warning{background:rgba(245,158,11,0.2);color:#f59e0b}
+.badge-info{background:rgba(59,130,246,0.2);color:#3b82f6}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;visibility:hidden;transition:all 0.2s}
+.modal-overlay.active{opacity:1;visibility:visible}
+.modal{background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:16px;width:90%;max-width:500px;max-height:90vh;overflow:hidden}
+.modal-header{padding:20px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center}
+.modal-body{padding:20px;overflow-y:auto;max-height:60vh}
+.modal-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:flex-end;gap:10px}
+</style>
 </head>
 <body>
-    <!-- Background Animation -->
-    <div class="bg-animation">
-        <div class="bg-orb bg-orb-1"></div>
-        <div class="bg-orb bg-orb-2"></div>
-        <div class="bg-orb bg-orb-3"></div>
-    </div>
-    
-    <!-- Login Screen -->
-    <div class="login-screen" id="loginScreen">
-        <div class="login-card animate-scaleIn">
-            <div class="login-logo">🛡️</div>
-            <h1 class="login-title">Welcome Back</h1>
-            <p class="login-subtitle">Enter your admin key to access the dashboard</p>
-            
-            <div class="login-error hidden" id="loginError">
-                <span>⚠️</span>
-                <span id="loginErrorText">Invalid admin key</span>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Admin Key</label>
-                <input 
-                    type="password" 
-                    id="adminKeyInput" 
-                    class="form-input" 
-                    placeholder="Enter your admin key..."
-                    autocomplete="off"
-                >
-            </div>
-            
-            <button 
-    class="btn btn-primary btn-lg" 
-    style="width: 100%; margin-top: var(--space-4);" 
-    id="loginBtn"
-    type="button"
->
-    🚀 Login
-            </button>
-            
-            <p class="login-footer">
-                Powered by Script Shield v1.0
-            </p>
-        </div>
-    </div>
-    
-    <!-- Dashboard Screen -->
-    <div class="app hidden" id="dashboardScreen">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">🛡️</div>
-                <div class="sidebar-brand">
-                    <span class="sidebar-brand-name">Script Shield</span>
-                    <span class="sidebar-brand-tag">Admin Panel</span>
-                </div>
-            </div>
-            
-            <nav class="sidebar-nav">
-                <div class="nav-section">
-    <div class="nav-section-title">Main</div>
-    <div class="nav-item active" data-page="dashboard">
-        <span class="nav-item-icon">📊</span>
-        <span class="nav-item-text">Dashboard</span>
-    </div>
-    <div class="nav-item" data-page="sessions">
-        <span class="nav-item-icon">👥</span>
-        <span class="nav-item-text">Sessions</span>
-    </div>
-    <div class="nav-item" data-page="bans">
-        <span class="nav-item-icon">🚫</span>
-        <span class="nav-item-text">Bans</span>
-    </div>
-    <div class="nav-item" data-page="suspended">
-        <span class="nav-item-icon">⏸️</span>
-        <span class="nav-item-text">Suspended</span>
-    </div>
-    <div class="nav-item" data-page="logs">
-        <span class="nav-item-icon">📋</span>
-        <span class="nav-item-text">Logs</span>
-    </div>
+
+<!-- Login Screen -->
+<div class="login-screen" id="loginScreen">
+<div class="login-box">
+<div style="text-align:center;font-size:48px;margin-bottom:16px">🛡️</div>
+<h1 class="login-title">Admin Panel</h1>
+<p class="login-subtitle">Enter your admin key to continue</p>
+<div class="login-error hidden" id="loginError"><span id="loginErrorText"></span></div>
+<div style="margin-bottom:16px">
+<input type="password" class="form-input" id="adminKeyInput" placeholder="Enter admin key...">
+</div>
+<button class="btn btn-primary" style="width:100%" id="loginBtn">🚀 Login</button>
+</div>
 </div>
 
+<!-- Dashboard Screen -->
+<div class="app hidden" id="dashboardScreen">
+<aside class="sidebar">
+<div class="sidebar-logo">
+<div class="sidebar-logo-icon">🛡️</div>
+<div class="sidebar-logo-text">Script Shield</div>
+</div>
 <div class="nav-section">
-    <div class="nav-section-title">Access Control</div>
-    <div class="nav-item" data-page="whitelist">
-        <span class="nav-item-icon">⭐</span>
-        <span class="nav-item-text">Whitelist</span>
-    </div>
+<div class="nav-section-title">Main</div>
+<div class="nav-item active" data-page="dashboard">📊 Dashboard</div>
+<div class="nav-item" data-page="sessions">👥 Sessions</div>
+<div class="nav-item" data-page="bans">🚫 Bans</div>
+<div class="nav-item" data-page="suspended">⏸️ Suspended</div>
+<div class="nav-item" data-page="logs">📋 Logs</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">System</div>
+<div class="nav-item" data-page="whitelist">⭐ Whitelist</div>
+<div class="nav-item" data-page="settings">⚙️ Settings</div>
+</div>
+<div style="margin-top:auto;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1)">
+<div class="nav-item" onclick="Auth.logout()">🚪 Logout</div>
+</div>
+</aside>
+<main class="main-content">
+<div class="page-content" id="pageContent">
+<div style="text-align:center;padding:60px"><div class="spinner"></div></div>
+</div>
+</main>
 </div>
 
-<div class="nav-section">
-    <div class="nav-section-title">System</div>
-    <div class="nav-item" data-page="settings">
-        <span class="nav-item-icon">⚙️</span>
-        <span class="nav-item-text">Settings</span>
-    </div>
-</div>
-        </aside>
-        <div class="sidebar-overlay" onclick="App.toggleSidebar()"></div>
-        
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="header">
-                <div class="header-left">
-                    <button class="btn btn-ghost btn-icon mobile-menu-btn" onclick="App.toggleSidebar()">
-                        ☰
-                    </button>
-                    <div class="header-breadcrumb">
-                        <span>Admin</span>
-                        <span>/</span>
-                        <span id="currentPageName">Dashboard</span>
-                    </div>
-                </div>
-                
-                <div class="header-right">
-                    <div class="header-actions">
-                        <button class="header-icon-btn" onclick="Dashboard.refresh()" title="Refresh">
-                            ↻
-                        </button>
-                    </div>
-                    
-                    <div class="header-profile">
-                        <div class="header-profile-avatar">A</div>
-                        <div class="header-profile-info">
-                            <span class="header-profile-name">Admin</span>
-                            <span class="header-profile-role">Administrator</span>
-                        </div>
-                    </div>
-                </div>
-            </header>
-            
-            <!-- Page Content -->
-            <div class="page-content" id="pageContent">
-                <!-- Content will be rendered by JS -->
-                <div class="empty-state">
-                    <div class="spinner spinner-lg"></div>
-                    <p class="text-muted" style="margin-top: var(--space-4);">Loading...</p>
-                </div>
-            </div>
-        </main>
-    </div>
-    
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-    
-    <!-- Confirm Modal -->
-    <div class="modal-overlay" id="confirmModal">
-        <div class="modal" style="max-width: 400px;">
-            <div class="modal-header">
-                <h3 class="modal-title" id="confirmTitle">Confirm</h3>
-                <button class="modal-close" onclick="document.getElementById('confirmModal').classList.remove('active')">✕</button>
-            </div>
-            <div class="modal-body">
-                <p id="confirmMessage" class="text-secondary">Are you sure?</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="confirmCancelBtn">Cancel</button>
-                <button class="btn btn-danger" id="confirmBtn">Confirm</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Scripts -->
-    <script src="/admin/js/config.js"></script>
-    <script src="/admin/js/api.js"></script>
-    <script src="/admin/js/auth.js"></script>
-    <script src="/admin/js/utils.js"></script>
-    <script src="/admin/js/dashboard.js"></script>
-    <script src="/admin/js/bans.js"></script>
-    <script src="/admin/js/logs.js"></script>
-    <script src="/admin/js/whitelist.js"></script>
-    <script src="/admin/js/sessions.js"></script>
-    <script src="/admin/js/suspended.js"></script>
-    <script src="/admin/js/app.js"></script>
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ============ CONFIG ============
+const CONFIG={API_BASE:window.location.origin};
+
+// ============ UTILS ============
+const Utils={
+toast(msg,type='info'){
+const c=document.getElementById('toastContainer');if(!c)return;
+const t=document.createElement('div');
+t.className='toast';
+t.innerHTML=`<span>${type==='success'?'✅':type==='error'?'❌':'ℹ️'}</span> ${msg}`;
+c.appendChild(t);
+setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300)},3000);
+},
+formatDate(d){if(!d)return'N/A';try{const x=new Date(d),n=Date.now()-x;if(n<60000)return'Just now';if(n<3600000)return Math.floor(n/60000)+'m ago';if(n<86400000)return Math.floor(n/3600000)+'h ago';return x.toLocaleDateString()}catch{return'N/A'}},
+formatNumber(n){if(!n)return'0';if(n>=1000000)return(n/1000000).toFixed(1)+'M';if(n>=1000)return(n/1000).toFixed(1)+'K';return String(n)},
+escapeHtml(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML},
+truncate(s,l=20){if(!s)return'';return s.length>l?s.substring(0,l)+'...':s}
+};
+
+// ============ API ============
+const API={
+getKey(){return localStorage.getItem('admin_key')||''},
+setKey(k){localStorage.setItem('admin_key',k)},
+clearKey(){localStorage.removeItem('admin_key')},
+async request(endpoint,options={}){
+const url=CONFIG.API_BASE+endpoint;
+console.log('[API]',options.method||'GET',endpoint);
+try{
+const controller=new AbortController();
+const timeout=setTimeout(()=>controller.abort(),15000);
+const res=await fetch(url,{...options,signal:controller.signal,headers:{'Content-Type':'application/json','x-admin-key':this.getKey(),...(options.headers||{})}});
+clearTimeout(timeout);
+const data=await res.json().catch(()=>({success:false,error:'Invalid response'}));
+console.log('[API] Response:',res.status,data);
+return data;
+}catch(e){
+console.error('[API] Error:',e);
+return{success:false,error:e.message||'Request failed'};
+}
+},
+get(endpoint,params={}){const q=new URLSearchParams(params).toString();return this.request(q?`${endpoint}?${q}`:endpoint)},
+post(endpoint,body={}){return this.request(endpoint,{method:'POST',body:JSON.stringify(body)})},
+delete(endpoint){return this.request(endpoint,{method:'DELETE'})}
+};
+
+// ============ AUTH ============
+const Auth={
+isAuth:false,
+async check(){
+const k=API.getKey();
+if(!k){this.isAuth=false;return false}
+const r=await API.get('/api/admin/stats');
+this.isAuth=r.success;
+if(!this.isAuth)API.clearKey();
+return this.isAuth;
+},
+async login(key){
+if(!key||key.length<3)return{success:false,error:'Key too short'};
+API.setKey(key.trim());
+const r=await API.get('/api/admin/stats');
+if(r.success){this.isAuth=true;return{success:true}}
+API.clearKey();
+return{success:false,error:r.error||'Invalid key'};
+},
+logout(){API.clearKey();this.isAuth=false;App.showLogin()}
+};
+
+// ============ DASHBOARD ============
+const Dashboard={
+stats:{sessions:0,success:0,challenges:0,bans:0},
+async init(){await this.loadStats();await this.loadActivity()},
+async loadStats(){
+const r=await API.get('/api/admin/stats');
+if(r.success){
+this.stats={sessions:r.sessions||0,success:r.stats?.success||0,challenges:r.stats?.challenges||0,bans:r.stats?.bans||0};
+const el=id=>document.getElementById(id);
+if(el('statSessions'))el('statSessions').textContent=Utils.formatNumber(this.stats.sessions);
+if(el('statSuccess'))el('statSuccess').textContent=Utils.formatNumber(this.stats.success);
+if(el('statChallenges'))el('statChallenges').textContent=Utils.formatNumber(this.stats.challenges);
+if(el('statBans'))el('statBans').textContent=Utils.formatNumber(this.stats.bans);
+}
+},
+async loadActivity(){
+const c=document.getElementById('recentActivity');if(!c)return;
+const r=await API.get('/api/admin/logs',{limit:5});
+if(r.success&&r.logs?.length>0){
+c.innerHTML=r.logs.map(l=>`<div style="display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid rgba(255,255,255,0.05)"><div style="width:32px;height:32px;border-radius:8px;background:${l.success?'rgba(34,197,94,0.2)':'rgba(239,68,68,0.2)'};display:flex;align-items:center;justify-content:center">${l.success?'✅':'❌'}</div><div style="flex:1"><div style="font-size:14px">${Utils.escapeHtml(l.action||'?')}</div><div style="font-size:12px;color:#666">${l.ip||'?'} • ${Utils.formatDate(l.ts)}</div></div><span class="badge ${l.client==='executor'?'badge-success':'badge-warning'}">${l.client||'?'}</span></div>`).join('');
+}else{c.innerHTML='<div style="text-align:center;padding:40px;color:#666">No activity yet</div>'}
+},
+async refresh(){await this.loadStats();await this.loadActivity();Utils.toast('Refreshed','success')},
+copyLoader(){navigator.clipboard.writeText(`loadstring(game:HttpGet("${CONFIG.API_BASE}/loader"))()`);Utils.toast('Copied!','success')},
+async clearCache(){if(confirm('Clear cache?')){const r=await API.post('/api/admin/cache/clear');Utils.toast(r.success?'Cleared':'Failed',r.success?'success':'error')}},
+render(){return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px"><div><h1 style="font-size:28px;margin:0">Dashboard</h1><p style="color:#666;margin:4px 0 0">System overview</p></div><button class="btn btn-secondary" onclick="Dashboard.refresh()">↻ Refresh</button></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px"><div class="card" style="padding:20px"><div style="font-size:28px;margin-bottom:8px">👥</div><div style="font-size:28px;font-weight:700" id="statSessions">-</div><div style="color:#666;font-size:14px">Sessions</div></div><div class="card" style="padding:20px"><div style="font-size:28px;margin-bottom:8px">✅</div><div style="font-size:28px;font-weight:700" id="statSuccess">-</div><div style="color:#666;font-size:14px">Success</div></div><div class="card" style="padding:20px"><div style="font-size:28px;margin-bottom:8px">🔐</div><div style="font-size:28px;font-weight:700" id="statChallenges">-</div><div style="color:#666;font-size:14px">Challenges</div></div><div class="card" style="padding:20px"><div style="font-size:28px;margin-bottom:8px">🚫</div><div style="font-size:28px;font-weight:700" id="statBans">-</div><div style="color:#666;font-size:14px">Bans</div></div></div><div style="display:grid;grid-template-columns:2fr 1fr;gap:16px"><div class="card"><div style="padding:16px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between"><strong>📋 Recent Activity</strong><a href="#" onclick="App.navigate('logs');return false" style="color:#8b5cf6">View All</a></div><div id="recentActivity" style="min-height:200px;display:flex;align-items:center;justify-content:center"><div class="spinner"></div></div></div><div class="card"><div style="padding:16px;border-bottom:1px solid rgba(255,255,255,0.1)"><strong>⚡ Quick Actions</strong></div><div style="padding:16px;display:flex;flex-direction:column;gap:8px"><button class="btn btn-secondary" style="width:100%" onclick="App.navigate('bans')">🚫 Manage Bans</button><button class="btn btn-secondary" style="width:100%" onclick="App.navigate('sessions')">👥 Sessions</button><button class="btn btn-secondary" style="width:100%" onclick="Dashboard.clearCache()">🗑️ Clear Cache</button><button class="btn btn-secondary" style="width:100%" onclick="Dashboard.copyLoader()">📋 Copy Loader</button></div></div></div>`}
+};
+
+// ============ BANS ============
+const Bans={
+list:[],
+async init(){await this.load()},
+async load(){
+const r=await API.get('/api/admin/bans');
+this.list=r.success?r.bans||[]:[];
+this.renderTable();
+},
+renderTable(){
+const t=document.getElementById('bansTable');if(!t)return;
+if(this.list.length===0){t.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:#666">No bans</td></tr>';return}
+t.innerHTML=this.list.map(b=>`<tr><td><code>${b.banId||'?'}</code></td><td>${b.hwid||b.playerId||b.ip||'?'}</td><td>${Utils.escapeHtml(b.reason||'-')}</td><td>${Utils.formatDate(b.ts)}</td><td><button class="btn btn-danger" style="padding:6px 12px" onclick="Bans.remove('${b.banId}')">🗑️</button></td></tr>`).join('');
+},
+async remove(id){if(confirm('Remove ban?')){await API.delete('/api/admin/bans/'+id);this.load();Utils.toast('Removed','success')}},
+async add(){
+const h=document.getElementById('banHwid')?.value?.trim();
+const u=document.getElementById('banUserId')?.value?.trim();
+const i=document.getElementById('banIp')?.value?.trim();
+const r=document.getElementById('banReason')?.value?.trim()||'Manual';
+if(!h&&!u&&!i){Utils.toast('Enter at least one field','error');return}
+const res=await API.post('/api/admin/bans',{hwid:h||undefined,playerId:u?parseInt(u):undefined,ip:i||undefined,reason:r});
+if(res.success){Utils.toast('Ban added','success');this.closeModal();this.load()}else{Utils.toast(res.error||'Failed','error')}
+},
+openModal(){document.getElementById('banModal').classList.add('active')},
+closeModal(){document.getElementById('banModal').classList.remove('active')},
+render(){return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px"><div><h1 style="font-size:28px;margin:0">🚫 Bans</h1></div><button class="btn btn-primary" onclick="Bans.openModal()">➕ Add Ban</button></div><div class="card"><table class="table"><thead><tr><th>ID</th><th>Target</th><th>Reason</th><th>Date</th><th>Actions</th></tr></thead><tbody id="bansTable"><tr><td colspan="5" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div><div class="modal-overlay" id="banModal"><div class="modal"><div class="modal-header"><strong>➕ Add Ban</strong><button onclick="Bans.closeModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer">✕</button></div><div class="modal-body"><div style="margin-bottom:12px"><label style="display:block;margin-bottom:4px;color:#888">HWID</label><input class="form-input" id="banHwid" placeholder="Optional"></div><div style="margin-bottom:12px"><label style="display:block;margin-bottom:4px;color:#888">User ID</label><input class="form-input" id="banUserId" placeholder="Optional" type="number"></div><div style="margin-bottom:12px"><label style="display:block;margin-bottom:4px;color:#888">IP</label><input class="form-input" id="banIp" placeholder="Optional"></div><div style="margin-bottom:12px"><label style="display:block;margin-bottom:4px;color:#888">Reason</label><input class="form-input" id="banReason" value="Manual ban"></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="Bans.closeModal()">Cancel</button><button class="btn btn-danger" onclick="Bans.add()">🚫 Ban</button></div></div></div>`}
+};
+
+// ============ LOGS ============
+const Logs={
+list:[],
+async init(){await this.load()},
+async load(){const r=await API.get('/api/admin/logs',{limit:50});this.list=r.success?r.logs||[]:[];this.renderTable()},
+renderTable(){
+const t=document.getElementById('logsTable');if(!t)return;
+if(this.list.length===0){t.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:#666">No logs</td></tr>';return}
+t.innerHTML=this.list.map(l=>`<tr><td>${Utils.formatDate(l.ts)}</td><td>${Utils.escapeHtml(l.action||'?')}</td><td><span class="badge ${l.client==='executor'?'badge-success':'badge-warning'}">${l.client||'?'}</span></td><td><code>${l.ip||'?'}</code></td><td><span class="badge ${l.success?'badge-success':'badge-danger'}">${l.success?'OK':'FAIL'}</span></td></tr>`).join('');
+},
+render(){return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px"><div><h1 style="font-size:28px;margin:0">📋 Logs</h1></div><button class="btn btn-secondary" onclick="Logs.load();Utils.toast('Refreshed','success')">↻ Refresh</button></div><div class="card"><table class="table"><thead><tr><th>Time</th><th>Action</th><th>Client</th><th>IP</th><th>Status</th></tr></thead><tbody id="logsTable"><tr><td colspan="5" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div>`}
+};
+
+// ============ SESSIONS ============
+const Sessions={
+list:[],
+async init(){await this.load()},
+async load(){const r=await API.get('/api/admin/sessions');this.list=r.success?r.sessions||[]:[];this.renderTable()},
+renderTable(){
+const t=document.getElementById('sessionsTable');if(!t)return;
+if(this.list.length===0){t.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:#666">No sessions</td></tr>';return}
+t.innerHTML=this.list.map(s=>`<tr><td><code>${Utils.truncate(s.sessionId,10)}</code></td><td>${s.userId||'?'}</td><td><code>${Utils.truncate(s.hwid||'?',12)}</code></td><td>${s.ip||'?'}</td><td><button class="btn btn-danger" style="padding:6px 12px" onclick="Sessions.kill('${s.sessionId}')">Kill</button></td></tr>`).join('');
+},
+async kill(id){if(confirm('Kill session?')){await API.post('/api/admin/kill-session',{sessionId:id});this.load();Utils.toast('Killed','success')}},
+render(){return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px"><div><h1 style="font-size:28px;margin:0">👥 Sessions</h1></div><button class="btn btn-secondary" onclick="Sessions.load();Utils.toast('Refreshed','success')">↻ Refresh</button></div><div class="card"><table class="table"><thead><tr><th>Session</th><th>User</th><th>HWID</th><th>IP</th><th>Actions</th></tr></thead><tbody id="sessionsTable"><tr><td colspan="5" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div>`}
+};
+
+// ============ SUSPENDED ============
+const Suspended={
+list:[],
+async init(){await this.load()},
+async load(){const r=await API.get('/api/admin/suspended');this.list=r.success?r.suspended||[]:[];this.renderTable()},
+renderTable(){
+const t=document.getElementById('suspendedTable');if(!t)return;
+if(this.list.length===0){t.innerHTML='<tr><td colspan="4" style="text-align:center;padding:40px;color:#666">No suspended</td></tr>';return}
+t.innerHTML=this.list.map(s=>`<tr><td><span class="badge badge-info">${s.type}</span></td><td><code>${Utils.truncate(s.value,16)}</code></td><td>${Utils.escapeHtml(s.reason||'-')}</td><td><button class="btn btn-success" style="padding:6px 12px" onclick="Suspended.remove('${s.type}','${s.value}')">Unsuspend</button></td></tr>`).join('');
+},
+async remove(t,v){if(confirm('Unsuspend?')){await API.post('/api/admin/unsuspend',{type:t,value:v});this.load();Utils.toast('Done','success')}},
+render(){return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px"><div><h1 style="font-size:28px;margin:0">⏸️ Suspended</h1></div><button class="btn btn-secondary" onclick="Suspended.load();Utils.toast('Refreshed','success')">↻ Refresh</button></div><div class="card"><table class="table"><thead><tr><th>Type</th><th>Value</th><th>Reason</th><th>Actions</th></tr></thead><tbody id="suspendedTable"><tr><td colspan="4" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div>`}
+};
+
+// ============ WHITELIST ============
+const Whitelist={
+data:{userIds:[],hwids:[]},
+async init(){await this.load()},
+async load(){const r=await API.get('/api/admin/whitelist');if(r.success)this.data=r.whitelist||{userIds:[],hwids:[]};this.renderTable()},
+renderTable(){
+const t=document.getElementById('whitelistTable');if(!t)return;
+const all=[...this.data.userIds.map(v=>({type:'userId',value:v})),...this.data.hwids.map(v=>({type:'hwid',value:v}))];
+if(all.length===0){t.innerHTML='<tr><td colspan="3" style="text-align:center;padding:40px;color:#666">Empty</td></tr>';return}
+t.innerHTML=all.map(w=>`<tr><td><span class="badge badge-info">${w.type}</span></td><td><code>${w.value}</code></td><td><button class="btn btn-danger" style="padding:6px 12px" onclick="Whitelist.remove('${w.type}','${w.value}')">Remove</button></td></tr>`).join('');
+},
+async remove(t,v){if(confirm('Remove?')){await API.delete('/api/admin/whitelist',{type:t,value:v});this.load();Utils.toast('Removed','success')}},
+render(){return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px"><div><h1 style="font-size:28px;margin:0">⭐ Whitelist</h1></div><button class="btn btn-secondary" onclick="Whitelist.load();Utils.toast('Refreshed','success')">↻ Refresh</button></div><div class="card"><table class="table"><thead><tr><th>Type</th><th>Value</th><th>Actions</th></tr></thead><tbody id="whitelistTable"><tr><td colspan="3" style="text-align:center;padding:40px"><div class="spinner"></div></td></tr></tbody></table></div>`}
+};
+
+// ============ SETTINGS ============
+const Settings={
+render(){return`<div style="margin-bottom:24px"><h1 style="font-size:28px;margin:0">⚙️ Settings</h1></div><div class="card" style="padding:24px;margin-bottom:16px"><h3 style="margin:0 0 16px">🔑 Authentication</h3><p style="color:#888">Key: <code>${API.getKey().substring(0,4)}****</code></p><button class="btn btn-danger" onclick="Auth.logout()">Logout</button></div><div class="card" style="padding:24px"><h3 style="margin:0 0 16px">📋 Loader Script</h3><pre style="background:#0a0a0f;padding:16px;border-radius:8px;overflow-x:auto"><code>loadstring(game:HttpGet("${CONFIG.API_BASE}/loader"))()</code></pre><button class="btn btn-primary" style="margin-top:12px" onclick="Dashboard.copyLoader()">📋 Copy</button></div>`}
+};
+
+// ============ APP ============
+const App={
+currentPage:'dashboard',
+async init(){
+console.log('[App] Init');
+this.bindLogin();
+const btn=document.getElementById('loginBtn');
+if(btn){btn.disabled=true;btn.textContent='Checking...';}
+const ok=await Auth.check();
+if(btn){btn.disabled=false;btn.textContent='🚀 Login';}
+if(ok)this.showDashboard();else this.showLogin();
+},
+bindLogin(){
+const btn=document.getElementById('loginBtn');
+const input=document.getElementById('adminKeyInput');
+if(btn)btn.onclick=()=>this.login();
+if(input)input.onkeypress=e=>{if(e.key==='Enter')this.login()};
+},
+async login(){
+const input=document.getElementById('adminKeyInput');
+const btn=document.getElementById('loginBtn');
+const err=document.getElementById('loginError');
+const errText=document.getElementById('loginErrorText');
+const key=input?.value||'';
+if(!key){if(errText)errText.textContent='Enter key';if(err)err.classList.remove('hidden');return}
+if(err)err.classList.add('hidden');
+if(btn){btn.disabled=true;btn.textContent='⏳ Verifying...';}
+const r=await Auth.login(key);
+if(r.success){
+if(btn)btn.textContent='✅ Success';
+setTimeout(()=>this.showDashboard(),300);
+}else{
+if(errText)errText.textContent=r.error||'Failed';
+if(err)err.classList.remove('hidden');
+if(btn){btn.disabled=false;btn.textContent='🚀 Login';}
+}
+},
+showLogin(){
+document.getElementById('loginScreen')?.classList.remove('hidden');
+document.getElementById('dashboardScreen')?.classList.add('hidden');
+document.getElementById('adminKeyInput')?.focus();
+},
+showDashboard(){
+document.getElementById('loginScreen')?.classList.add('hidden');
+document.getElementById('dashboardScreen')?.classList.remove('hidden');
+this.bindNav();
+this.navigate('dashboard');
+},
+bindNav(){
+document.querySelectorAll('.nav-item[data-page]').forEach(el=>{
+el.onclick=()=>this.navigate(el.dataset.page);
+});
+},
+navigate(page){
+console.log('[App] Navigate:',page);
+this.currentPage=page;
+document.querySelectorAll('.nav-item').forEach(el=>{
+el.classList.toggle('active',el.dataset.page===page);
+});
+const c=document.getElementById('pageContent');
+if(!c)return;
+c.innerHTML='<div style="text-align:center;padding:60px"><div class="spinner"></div></div>';
+setTimeout(()=>{
+switch(page){
+case'dashboard':c.innerHTML=Dashboard.render();Dashboard.init();break;
+case'bans':c.innerHTML=Bans.render();Bans.init();break;
+case'logs':c.innerHTML=Logs.render();Logs.init();break;
+case'sessions':c.innerHTML=Sessions.render();Sessions.init();break;
+case'suspended':c.innerHTML=Suspended.render();Suspended.init();break;
+case'whitelist':c.innerHTML=Whitelist.render();Whitelist.init();break;
+case'settings':c.innerHTML=Settings.render();break;
+default:c.innerHTML=Dashboard.render();Dashboard.init();
+}
+},50);
+}
+};
+
+document.addEventListener('DOMContentLoaded',()=>App.init());
+</script>
 </body>
 </html>
