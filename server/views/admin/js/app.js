@@ -149,7 +149,9 @@ setTimeout(()=>{
 try{
 switch(page){
 case'dashboard':
-if(typeof Dashboard!=='undefined'){content.innerHTML=Dashboard.render();Dashboard.init()}
+content.innerHTML=Dashboard.render();
+Dashboard.init();
+setTimeout(()=>Dashboard.loadRecentActivity(),100);
 break;
 case'bans':
 if(typeof Bans!=='undefined'){content.innerHTML=Bans.render();Bans.init()}
