@@ -1,96 +1,48 @@
-/* ============================================
-   AUTH - Authentication Handler (FIXED)
-   ============================================ */
+const Auth={
+isAuthenticated:false,
 
-const Auth = {
-    isAuthenticated: false,
-    isChecking: false,
-    
-    // Check if user has valid session
-    async check() {
-        if (this.isChecking) {
-            console.log('[Auth] Already checking...');
-            return this.isAuthenticated;
-        }
-        
-        const key = API.getKey();
-        if (!key) {
-            console.log('[Auth] No stored key');
-            this.isAuthenticated = false;
-            return false;
-        }
-        
-        console.log('[Auth] Checking stored key...');
-        this.isChecking = true;
-        
-        const result = await API.getStats();
-        
-        this.isChecking = false;
-        this.isAuthenticated = result.success === true;
-        
-        console.log('[Auth] Check result:', this.isAuthenticated);
-        
-        if (!this.isAuthenticated) {
-            // Clear invalid stored key
-            API.clearKey();
-        }
-        
-        return this.isAuthenticated;
-    },
-    
-    // Login with admin key
-    async login(adminKey) {
-        console.log('[Auth] Login attempt...');
-        
-        // Validate input
-        if (!adminKey || typeof adminKey !== 'string') {
-            return { 
-                success: false, 
-                error: 'Masukkan admin key' 
-            };
-        }
-        
-        const trimmedKey = adminKey.trim();
-        
-        if (trimmedKey.length < 8) {
-            return { 
-                success: false, 
-                error: 'Admin key minimal 8 karakter' 
-            };
-        }
-        
-        // Verify key with server
-        console.log('[Auth] Verifying key with server...');
-        const result = await API.verifyKey(trimmedKey);
-        
-        if (result.success) {
-            this.isAuthenticated = true;
-            console.log('[Auth] Login successful');
-            return { success: true };
-        } else {
-            this.isAuthenticated = false;
-            console.log('[Auth] Login failed:', result.error);
-            return { 
-                success: false, 
-                error: result.error || 'Invalid admin key'
-            };
-        }
-    },
-    
-    // Logout
-    logout() {
-        console.log('[Auth] Logging out...');
-        API.clearKey();
-        this.isAuthenticated = false;
-        App.showLogin();
-        Utils.toast('Logged out', 'info');
-    },
-    
-    // Get stored key (masked)
-    getMaskedKey() {
-        const key = API.getKey();
-        if (!key) return '';
-        if (key.length <= 8) return '••••••••';
-        return key.substring(0, 4) + '••••••••' + key.substring(key.length - 4);
-    },
+async check(){
+console.log('[Auth] Checking session...');
+const key=API.getKey();
+if(!key){
+console.log('[Auth] No saved key');
+this.isAuthenticated=false;
+return false;
+}
+console.log('[Auth] Found saved key, verifying...');
+const result=await API.get('/api/admin/stats');
+this.isAuthenticated=result.success===true;
+console.log('[Auth] Verified:',this.isAuthenticated);
+if(!this.isAuthenticated){
+API.clearKey();
+}
+return this.isAuthenticated;
+},
+
+async login(adminKey){
+console.log('[Auth] Login attempt...');
+if(!adminKey||adminKey.trim().length<5){
+return{success:false,error:'Key terlalu pendek (min 5 karakter)'};
+}
+const trimmedKey=adminKey.trim();
+API.setKey(trimmedKey);
+console.log('[Auth] Key set, verifying with server...');
+const result=await API.get('/api/admin/stats');
+console.log('[Auth] Server response:',result);
+if(result.success){
+this.isAuthenticated=true;
+return{success:true};
+}else{
+API.clearKey();
+this.isAuthenticated=false;
+return{success:false,error:result.error||'Invalid key'};
+}
+},
+
+logout(){
+console.log('[Auth] Logging out');
+API.clearKey();
+this.isAuthenticated=false;
+if(typeof App!=='undefined')App.showLogin();
+}
 };
