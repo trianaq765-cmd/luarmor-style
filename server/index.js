@@ -25,7 +25,7 @@ const ALLOWED_E = ['synapse', 'synapsex', 'script-ware', 'scriptware', 'delta', 
 function hmac(d, k) { return crypto.createHmac('sha256', k).update(d).digest('hex'); }
 function secureCompare(a, b) { if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false; try { return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b)); } catch { return false; } }
 function getIP(r) { return (r.headers['x-forwarded-for'] || '').split(',')[0].trim() || r.headers['x-real-ip'] || r.ip || '0.0.0.0'; }
-function getHWID(r) { return r.headers['x-hwid'] || (r.body && r.body.hwid) || null; } // Improved HWID fetch
+function getHWID(r) { return r.headers['x-hwid'] || null; }
 function genSessionKey(u, h, t, s) { return hmac(`${u}:${h}:${t}`, s).substring(0, 32); }
 
 // === CLIENT DETECTION ===
@@ -58,42 +58,13 @@ function shouldBlock(req) {
     return ['bot', 'browser', 'unknown'].includes(getClientType(req));
 }
 
-// === ADVANCED FAKE SCRIPT GENERATOR ===
+// === FAKE SCRIPT & ENCRYPTION ===
 function genFakeScript() {
-    const rS = (l) => { const c = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'; let s = c[Math.floor(Math.random()*26)]; for (let i = 1; i < l; i++) s += c[Math.floor(Math.random() * c.length)]; return s; };
+    const rS = (l) => { const c = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'; let s = ''; for (let i = 0; i < l; i++) s += c[Math.floor(Math.random() * c.length)]; return s; };
     const rH = (l) => { let h = ''; for (let i = 0; i < l; i++) h += Math.floor(Math.random() * 16).toString(16); return h; };
-    const vars = Array(20).fill(0).map(()=>rS(Math.floor(Math.random()*10)+5));
-    // Mimic Luraph/IronBrew Structure
-    return `--[[ Luraph Obfuscation v14.4.7 | Protected by Script Shield ]]
-local ${vars[0]},${vars[1]},${vars[2]};
-local ${vars[3]} = "${rH(64)}";
-local ${vars[4]} = {
-    "${rH(32)}", "${rH(32)}", "${rH(32)}", "${rH(32)}",
-    "${rH(32)}", "${rH(32)}", "${rH(32)}", "${rH(32)}"
-};
-local ${vars[5]} = function(${vars[6]})
-    local ${vars[7]} = 0;
-    for ${vars[8]} = 1, #${vars[6]} do
-        ${vars[7]} = ${vars[7]} + string.byte(${vars[6]}, ${vars[8]});
-    end
-    return ${vars[7]};
-end;
-local ${vars[9]} = 0;
-while ${vars[9]} < 1000 do
-    ${vars[9]} = ${vars[9]} + 1;
-    if ${vars[5]}(${vars[3]}) == 0 then break end;
-end
---[[ 
-    Anti-Tamper: Enabled
-    VM: Lua 5.1
-    Session: ${rH(16)}
-]]
-error("Invalid License or HWID Mismatch", 0);
-${vars[0]} = function() return "Garbage Data ${rH(128)}" end;
-`;
+    return `--[[ Protected by Script Shield v2.0 | Hash: ${rH(32)} ]]\nlocal ${rS(6)} = "${rS(32)}";\nlocal ${rS(5)} = function(${rS(4)})\n return string.byte(${rS(4)}) * ${Math.floor(Math.random() * 100)};\nend;\n--[[ Obfuscation applied ]]`;
 }
 
-// === ENCRYPTION & CHUNK ===
 function encryptLoader(script, key) {
     const kB = Buffer.from(key);
     const sB = Buffer.from(script);
@@ -107,6 +78,7 @@ function genLoaderKey(req) {
     return crypto.createHash('md5').update(c.join(':')).digest('hex').substring(0, 16);
 }
 
+// === CHUNKED DELIVERY ===
 function chunkString(str, size) {
     const chunks = [];
     for (let i = 0; i < str.length; i += size) chunks.push(str.substring(i, i + size));
@@ -184,23 +156,9 @@ async function loadSuspendedFromDB() {
     }
 }
 
-// === IMPROVED LOGGING ===
+// === LOGGING ===
 async function logAccess(r, a, s, d = {}) {
-    // Capture ID from Body or Headers
-    const userId = d.userId || r.body?.userId || r.headers['x-roblox-id'];
-    const hwid = d.hwid || r.body?.hwid || r.headers['x-hwid'];
-    
-    const log = { 
-        ip: getIP(r), 
-        hwid: hwid, 
-        userId: userId, // Capture User ID explicitly
-        ua: (r.headers['user-agent'] || '').substring(0, 100), 
-        action: a, 
-        success: s, 
-        client: getClientType(r), 
-        ts: new Date().toISOString(), 
-        ...d 
-    };
+    const log = { ip: getIP(r), hwid: getHWID(r), ua: (r.headers['user-agent'] || '').substring(0, 100), action: a, success: s, client: getClientType(r), ts: new Date().toISOString(), ...d };
     await db.addLog(log);
     return log;
 }
@@ -236,7 +194,6 @@ function isObfuscated(s) {
     return [/Luraph/i, /Moonsec/i, /IronBrew/i, /Prometheus/i, /PSU/i].some(r => r.test(s.substring(0, 500)));
 }
 
-// === WRAPPER ===
 function wrapScript(s, serverUrl) {
     const o = (config.OWNER_USER_IDS || []).join(',');
     const w = (config.WHITELIST_USER_IDS || []).join(',');
@@ -245,7 +202,7 @@ function wrapScript(s, serverUrl) {
     const autoBan = config.AUTO_BAN_SPYTOOLS === true;
     const blList = `{ "spy", "dex", "remote", "http", "dumper", "explorer", "infinite", "yield", "iy", "console", "decompile", "saveinstance", "scriptdumper", "dark" }`;
 
-    return `--[[ Script Shield Protection Layer ]]
+    return `--[[ Script Protection for bot ]]
 local _CFG={o={${o}},w={${w}},banUrl="${serverUrl}/api/ban",webhookUrl="${serverUrl}/api/webhook/suspicious",hbUrl="${serverUrl}/api/heartbeat",sid="${sid}",as=${antiSpyEnabled},ab=${autoBan},hbi=45}
 local _P=game:GetService("Players") local _L=_P.LocalPlayer local _CG=game:GetService("CoreGui") local _SG=game:GetService("StarterGui") local _H=game:GetService("HttpService") local _A=true local _CON={} local _HB_FAIL=0 
 local _SAFE_GUIS={} 
@@ -269,7 +226,6 @@ _startOwnerMonitor();_startAntiSpy();_startHeartbeat();
 ${s}`;
 }
 
-// === LOADERS ===
 function getLoader(url) {
     return `local S="${url}" local H=game:GetService("HttpService") local P=game:GetService("Players") local L=P.LocalPlayer 
 local function n(t,x,d)pcall(function()game:GetService("StarterGui"):SetCore("SendNotification",{Title=t,Text=x,Duration=d or 3})end)end 
@@ -308,6 +264,10 @@ app.use(async (req, res, next) => {
     const adminPath = config.ADMIN_PATH || '/admin';
     if (req.path.startsWith(adminPath) || req.path === '/health' || req.path === '/loader' || req.path === '/l') return next();
     
+    // Log Access FIRST (Fix: Logging sebelum Blocking)
+    const ct = getClientType(req);
+    await logAccess(req, 'REQUEST', null, { clientType: ct });
+
     const ban = await db.isBanned(null, getIP(req), null);
     if (ban.blocked) {
         if (getClientType(req) === 'browser') return res.status(403).type('html').send(TRAP_HTML);
@@ -331,20 +291,32 @@ app.get('/health', (req, res) => res.json({ status: 'ok', redis: db.isRedisConne
 
 app.get(['/loader', '/api/loader.lua', '/api/loader', '/l'], async (req, res) => {
     const ct = getClientType(req), ip = getIP(req), hwid = getHWID(req);
+    
+    // Browser -> HTML
     if (ct === 'browser') return res.status(200).type('html').send(LOADER_HTML);
-    if (shouldBlock(req)) { console.log(`[Loader] Blocked ${ct} from ${ip}`); return res.status(200).type('text/plain').send(genFakeScript()); }
-    await logAccess(req, 'LOADER', ct === 'executor', { clientType: ct, userId: req.headers['x-roblox-id'] }); // Log UserID from Header
+    
+    // Bot Blocked?
+    if (shouldBlock(req)) {
+        await logAccess(req, 'BLOCKED_BOT', false, { clientType: ct });
+        return res.status(200).type('text/plain').send(genFakeScript());
+    }
+    
+    // Executor Allowed
+    await logAccess(req, 'LOADER_FETCH', true, { clientType: ct });
     const userId = req.headers['x-roblox-id'];
     const isWL = await checkWhitelist(hwid, userId, req);
     const url = process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`;
+    
     if (config.ENCODE_LOADER !== false && !isWL) res.type('text/plain').send(getEncodedLoader(url, req));
     else res.type('text/plain').send(getLoader(url));
 });
 
 app.post('/api/auth/challenge', async (req, res) => {
     const ct = getClientType(req);
-    if (shouldBlock(req)) { await logAccess(req, 'CHALLENGE_BLOCKED', false, { clientType: ct }); return res.status(403).json({ success: false, error: 'Access denied' }); }
+    if (shouldBlock(req)) { await logAccess(req, 'CHALLENGE_BLOCKED_BOT', false, { clientType: ct }); return res.status(403).json({ success: false, error: 'Access denied' }); }
     const { userId, hwid, placeId } = req.body;
+    await logAccess(req, 'CHALLENGE_INIT', true, { clientType: ct, userId, hwid }); // Log attempt
+    
     if (!userId || !placeId) return res.status(400).json({ success: false, error: 'Missing fields' });
     if (config.REQUIRE_HWID && !hwid) return res.status(400).json({ success: false, error: 'HWID required' });
     const uid = parseInt(userId), pid = parseInt(placeId);
@@ -352,10 +324,10 @@ app.post('/api/auth/challenge', async (req, res) => {
     const ip = getIP(req);
     const isWL = await checkWhitelist(hwid, uid, req);
     const susp = checkSuspended(hwid, uid, null);
-    if (susp) return res.json({ success: false, error: 'Suspended: ' + susp.reason });
-    if (!isWL) { const ban = await db.isBanned(hwid, ip, uid); if (ban.blocked) return res.json({ success: false, error: 'Banned: ' + ban.reason }); }
+    if (susp) { await logAccess(req, 'SUSPENDED_LOGIN', false, { userId, hwid }); return res.json({ success: false, error: 'Suspended: ' + susp.reason }); }
+    if (!isWL) { const ban = await db.isBanned(hwid, ip, uid); if (ban.blocked) { await logAccess(req, 'BANNED_LOGIN', false, { userId, hwid }); return res.json({ success: false, error: 'Banned: ' + ban.reason }); } }
     if (config.ALLOWED_PLACE_IDS && config.ALLOWED_PLACE_IDS.length > 0 && !config.ALLOWED_PLACE_IDS.includes(pid) && !isWL) return res.status(403).json({ success: false, error: 'Game not authorized' });
-    await logAccess(req, 'CHALLENGE', true, { clientType: ct, whitelisted: isWL, userId: uid, hwid: hwid }); // Pass ID explicitly
+    
     const id = crypto.randomBytes(16).toString('hex');
     const chal = genChallenge();
     await db.setChallenge(id, { id, userId: uid, hwid: hwid || 'none', placeId: pid, ip, whitelisted: isWL, ...chal }, 120);
@@ -369,8 +341,13 @@ app.post('/api/auth/verify', async (req, res) => {
     if (!challengeId || solution === undefined || !timestamp) return res.status(400).json({ success: false, error: 'Missing fields' });
     const challenge = await db.getChallenge(challengeId);
     if (!challenge) return res.status(403).json({ success: false, error: 'Challenge expired' });
+    
+    // Log Verification Attempt
+    await logAccess(req, 'VERIFY_ATTEMPT', null, { userId: challenge.userId });
+
     if (challenge.ip !== getIP(req)) return res.status(403).json({ success: false, error: 'IP mismatch' });
-    if (parseInt(solution) !== challenge.answer) return res.status(403).json({ success: false, error: 'Wrong solution' });
+    if (parseInt(solution) !== challenge.answer) { await logAccess(req, 'VERIFY_FAIL', false, { userId: challenge.userId, reason: 'Wrong math' }); return res.status(403).json({ success: false, error: 'Wrong solution' }); }
+    
     await db.deleteChallenge(challengeId);
     const script = await getScript();
     if (!script) return res.status(500).json({ success: false, error: 'Script not configured' });
@@ -379,7 +356,9 @@ app.post('/api/auth/verify', async (req, res) => {
     const sessionId = crypto.randomBytes(16).toString('hex');
     SESSIONS.set(sessionId, { hwid: challenge.hwid, ip: challenge.ip, userId: challenge.userId, placeId: challenge.placeId, created: Date.now(), lastSeen: Date.now() });
     webhook.execution({ userId: challenge.userId, hwid: challenge.hwid, placeId: challenge.placeId, ip: challenge.ip, executor: req.headers['user-agent'] }).catch(() => {});
+    
     await logAccess(req, 'VERIFY_SUCCESS', true, { userId: challenge.userId, hwid: challenge.hwid });
+    
     if (config.CHUNK_DELIVERY !== false || challenge.whitelisted) { const ckd = await prepareChunks(wrapped, challenge); return res.json({ success: true, mode: 'chunked', chunks: ckd.chunks, keys: ckd.keys, sessionId: sessionId }); }
     const isObf = isObfuscated(script) || config.SCRIPT_ALREADY_OBFUSCATED;
     if (isObf) return res.json({ success: true, mode: 'raw', script: wrapped, sessionId });
@@ -389,8 +368,11 @@ app.post('/api/auth/verify', async (req, res) => {
     res.json({ success: true, mode: 'encrypted', key, chunks, sessionId });
 });
 
-// ... (Other endpoints remain same, just ensuring logAccess has data) ...
-// For brevity, ensuring logAccess calls in other endpoints pass data
+// ... (SISA ENDPOINT ADMIN TIDAK BERUBAH) ...
+// (Agar muat, saya asumsikan Anda bisa copy bagian ADMIN API dari kode sebelumnya, atau saya paste lagi jika perlu)
+// ...
+// (Saya paste lagi agar 100% aman)
+
 app.post('/api/heartbeat', async (req, res) => {
     const { sessionId, hwid, userId } = req.body;
     if (!sessionId) return res.json({ success: true, action: 'CONTINUE' });
@@ -423,7 +405,6 @@ app.post('/api/ban', async (req, res) => {
     res.json({ success: true, banId });
 });
 
-// === ADMIN API ===
 app.get('/api/admin/stats', adminAuth, async (req, res) => { try { const s = await db.getStats(); res.json({ success: true, stats: s, sessions: SESSIONS.size, ts: new Date().toISOString() }); } catch (e) { res.status(500).json({ success: false, error: 'Failed' }); } });
 app.get('/api/admin/logs', adminAuth, async (req, res) => { const l = await db.getLogs(50); res.json({ success: true, logs: l }); });
 app.post('/api/admin/logs/clear', adminAuth, async (req, res) => { await db.clearLogs(); res.json({ success: true }); });
