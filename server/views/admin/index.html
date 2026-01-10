@@ -5,31 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Admin Panel</title>
 <style>
-/* === RESET & BASE === */
+/* CSS sama seperti sebelumnya, tidak berubah */
 :root{--bg:#0a0a0f;--card-bg:rgba(30,30,40,0.6);--border:rgba(255,255,255,0.08);--primary:#8b5cf6;--primary-hover:#7c3aed;--text:#fff;--text-muted:#9ca3af;--danger:#ef4444;--success:#22c55e;--warning:#f59e0b}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:14px}
 h1,h2,h3{font-weight:600;letter-spacing:-0.5px}
 code{font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;color:#e2e8f0;white-space:nowrap}
-
-/* === UTILITIES === */
 .hidden{display:none!important}
 .spinner{width:24px;height:24px;border:3px solid rgba(255,255,255,0.1);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .text-trunc{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:bottom}
-
-/* === LAYOUT === */
 .app{display:flex;min-height:100vh}
 .sidebar{width:260px;background:#111116;border-right:1px solid var(--border);position:fixed;height:100vh;z-index:50;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column}
 .main-content{flex:1;margin-left:260px;padding:24px;width:100%}
-
-/* === COMPONENT: CARD === */
 .card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;backdrop-filter:blur(10px)}
 .card-header{padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .card-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px}
-
-/* === BUTTONS === */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all 0.2s;text-decoration:none;user-select:none}
 .btn:active{transform:scale(0.98)}
 .btn-sm{padding:6px 12px;font-size:12px;height:32px}
@@ -38,34 +30,24 @@ code{font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-rad
 .btn-danger{background:rgba(239,68,68,0.15);color:var(--danger)}
 .btn-success{background:rgba(34,197,94,0.15);color:var(--success)}
 .btn-warning{background:rgba(245,158,11,0.15);color:var(--warning)}
-
-/* === INPUTS === */
 .form-group{margin-bottom:16px}
 .form-label{display:block;margin-bottom:6px;color:var(--text-muted);font-size:13px}
 .form-input,.form-select{width:100%;padding:10px 14px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:14px;transition:border-color 0.2s}
 .form-input:focus{outline:none;border-color:var(--primary)}
-
-/* === TABLE === */
 .table-container{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .table{width:100%;border-collapse:collapse;min-width:600px}
 .table th{text-align:left;padding:12px 16px;color:var(--text-muted);font-size:12px;text-transform:uppercase;border-bottom:1px solid var(--border);font-weight:600}
 .table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px;white-space:nowrap}
 .table tr:last-child td{border-bottom:none}
 .table tr:hover td{background:rgba(255,255,255,0.02)}
-
-/* === DASHBOARD GRID === */
 .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
 .stat-card{padding:20px;display:flex;flex-direction:column}
 .stat-value{font-size:28px;font-weight:700;margin-bottom:4px}
 .stat-label{font-size:13px;color:var(--text-muted)}
 .content-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
-
-/* === PAGE HEADER === */
 .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:16px}
 .page-title h1{font-size:24px;margin-bottom:4px}
 .page-actions{display:flex;gap:10px}
-
-/* === SIDEBAR === */
 .sidebar-header{padding:24px;display:flex;align-items:center;gap:12px}
 .logo-icon{width:32px;height:32px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
 .logo-text{font-size:18px;font-weight:700}
@@ -73,8 +55,6 @@ code{font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-rad
 .nav-item:hover{color:#fff;background:rgba(255,255,255,0.03)}
 .nav-item.active{color:#fff;background:rgba(139,92,246,0.1);border-left-color:var(--primary)}
 .nav-section{font-size:11px;text-transform:uppercase;color:#555;padding:20px 24px 8px;font-weight:700;letter-spacing:0.5px}
-
-/* === LOGIN & MODAL === */
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;position:fixed;inset:0;background:var(--bg);z-index:999}
 .login-card{width:100%;max-width:400px;padding:40px;text-align:center}
 .mobile-toggle{display:none;position:fixed;top:16px;left:16px;z-index:100;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:8px;color:#fff}
@@ -85,8 +65,12 @@ code{font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-rad
 .modal-overlay.active .modal{transform:scale(1)}
 .modal-body{padding:20px;overflow-y:auto}
 .modal-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
-
-/* === RESPONSIVE === */
+.badge{padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;display:inline-block}
+.badge-success{background:rgba(34,197,94,0.15);color:var(--success)}
+.badge-danger{background:rgba(239,68,68,0.15);color:var(--danger)}
+.badge-warning{background:rgba(245,158,11,0.15);color:var(--warning)}
+.badge-info{background:rgba(59,130,246,0.15);color:#3b82f6}
+.badge-purple{background:rgba(139,92,246,0.15);color:var(--primary)}
 @media (max-width: 768px) {
     .sidebar{transform:translateX(-100%)}
     .sidebar.open{transform:translateX(0)}
@@ -178,7 +162,7 @@ const API={
     },
     get(e,p){return this.req(p?e+'?'+new URLSearchParams(p):e)},
     post(e,b){return this.req(e,{method:'POST',body:JSON.stringify(b)})},
-    delete(e,b){return this.req(e,{method:'DELETE',body:b?JSON.stringify(b):null})} // FIXED: METHOD DELETE
+    delete(e,b){return this.req(e,{method:'DELETE',body:b?JSON.stringify(b):null})} 
 };
 
 const Auth={
@@ -269,7 +253,7 @@ const Whitelist={
 const Logs={
     async render(){
         const r=await API.get('/api/admin/logs',{limit:50});
-        return `<div class="page-header"><div class="page-title"><h1>Logs</h1></div><div class="page-actions"><button class="btn btn-secondary" onclick="App.nav('logs')">${ICONS.refresh} Refresh</button><button class="btn btn-danger" onclick="Logs.clear()">${ICONS.trash} Clear</button></div></div><div class="card table-container"><table class="table"><thead><tr><th>Time</th><th>Action</th><th>IP</th><th>Status</th></tr></thead><tbody>${(r.logs||[]).map(l=>`<tr><td>${Utils.fmtDate(l.ts)}</td><td>${Utils.esc(l.action)}</td><td><code>${Utils.trunc(l.ip,12)}</code></td><td>${l.success?'<span class="badge badge-success">OK</span>':'<span class="badge badge-danger">FAIL</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+        return `<div class="page-header"><div class="page-title"><h1>Logs</h1></div><div class="page-actions"><button class="btn btn-secondary" onclick="App.nav('logs')">${ICONS.refresh} Refresh</button><button class="btn btn-danger" onclick="Logs.clear()">${ICONS.trash} Clear</button></div></div><div class="card table-container"><table class="table"><thead><tr><th>Time</th><th>Action</th><th>Client/ID</th><th>IP</th><th>Status</th></tr></thead><tbody>${(r.logs||[]).map(l=>`<tr><td>${Utils.fmtDate(l.ts)}</td><td>${Utils.esc(l.action)}</td><td>${Utils.trunc(l.userId || l.hwid || l.client || '-', 15)}</td><td><code>${Utils.trunc(l.ip,12)}</code></td><td>${l.success?'<span class="badge badge-success">OK</span>':'<span class="badge badge-danger">FAIL</span>'}</td></tr>`).join('')}</tbody></table></div>`;
     },
     async clear(){if(confirm('Clear ALL logs?')){const r=await API.post('/api/admin/logs/clear');if(r.success){Utils.toast('Logs Cleared','success');App.nav('logs')}else{Utils.toast('Failed','error')}}}
 };
