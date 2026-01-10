@@ -3,15 +3,30 @@ const app=express(),SESSIONS=new Map(),dWL={u:new Set(),h:new Set(),i:new Set()}
 const BOTS=['python','curl','wget','axios','node','got','undici','java','http','ruby','perl','php','postman','insomnia','bot','crawl','spider','slurp','google','bing','yandex','twitter','discord','telegram','burp','fiddler','charles','nmap','nikto','sqlmap','scanner','monitor'];
 const HEADERS_E=['x-hwid','x-roblox-id','x-job-id'];
 const ALLOWED_E=['synapse','script-ware','delta','fluxus','krnl','oxygen','evon','hydrogen','vegax','trigon','solara','wave','codex','celery','swift','electron','sentinel','valyse','nihon','jjsploit','arceus','roblox','wininet'];
+
+// Utility Object (Global 'u')
 const u={
 hmac:(d,k)=>crypto.createHmac('sha256',k).update(d).digest('hex'),
 safeCmp:(a,b)=>{if(typeof a!=='string'||typeof b!=='string'||a.length!==b.length)return false;try{return crypto.timingSafeEqual(Buffer.from(a),Buffer.from(b))}catch{return false}},
 ip:r=>(r.headers['x-forwarded-for']||'').split(',')[0].trim()||r.ip||'0.0.0.0',
 hwid:r=>r.headers['x-hwid']||r.body?.hwid||null,
-sessKey:(u,h,t,s)=>u.hmac(`${u}:${h}:${t}`,s).substring(0,32)
+sessKey:(us,hw,ts,sk)=>u.hmac(`${us}:${hw}:${ts}`,sk).substring(0,32)
 };
+
 function getClient(r){const ua=(r.headers['user-agent']||'').toLowerCase(),h=r.headers,eS=HEADERS_E.filter(x=>h[x]).length;if(BOTS.some(p=>ua.includes(p))&&eS===0)return'bot';if(r.headers['sec-fetch-mode'])return'browser';if(!ua||ua.length<5)return'bot';if(eS>=2||ALLOWED_E.some(e=>ua.includes(e)))return'executor';return'unknown'}
-async function checkWL(h,u,r){const ip=u.ip(r);if(config.WHITELIST_IPS?.includes(ip)||dWL.i.has(ip))return true;if(u){const id=parseInt(u);if(config.WHITELIST_USER_IDS?.includes(id)||dWL.u.has(id))return true}if(h&&(config.WHITELIST_HWIDS?.includes(String(h))||dWL.h.has(String(h))))return true;return false}
+
+// FIXED: Renamed parameters 'h'->hwid, 'us'->userId to avoid conflict with global 'u'
+async function checkWL(hwid,userId,r){
+    const ip=u.ip(r);
+    if(config.WHITELIST_IPS?.includes(ip)||dWL.i.has(ip))return true;
+    if(userId){
+        const id=parseInt(userId);
+        if(config.WHITELIST_USER_IDS?.includes(id)||dWL.u.has(id))return true
+    }
+    if(hwid&&(config.WHITELIST_HWIDS?.includes(String(hwid))||dWL.h.has(String(hwid))))return true;
+    return false
+}
+
 function isBlocked(r){if(r.path==='/health')return false;const ip=u.ip(r);if(config.WHITELIST_IPS?.includes(ip)||dWL.i.has(ip))return false;return['bot','browser','unknown'].includes(getClient(r))}
 function genFake(){const rS=l=>{const c='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';let s='';for(let i=0;i<l;i++)s+=c[Math.floor(Math.random()*c.length)];return s};const v=Array(15).fill(0).map(()=>rS(6));return`--[[ Protected v2 ]]\nlocal ${v[0]}={ "${rS(32)}", "${rS(32)}", "${rS(32)}" };\nlocal ${v[1]}=function(${v[2]}) return string.byte(${v[2]})*${Math.floor(Math.random()*99)} end;\nfor ${v[3]}=1,#${v[0]} do ${v[1]}(${v[0]}[${v[3]}]) end;\nerror("Auth Failed: Invalid HWID or IP",0);`}
 function encLoader(s,k){const kb=Buffer.from(k),sb=Buffer.from(s),e=[];for(let i=0;i<sb.length;i++)e.push(sb[i]^kb[i%kb.length]);return Buffer.from(e).toString('base64')}
@@ -20,7 +35,7 @@ function chunk(s,z){const c=[];for(let i=0;i<s.length;i+=z)c.push(s.substring(i,
 function encChunk(c,k){const e=[];for(let i=0;i<c.length;i++)e.push((c.charCodeAt(i)^k.charCodeAt(i%k.length))&255);return e}
 async function prepChunks(s,ch){const n=config.CHUNK_COUNT||3,z=Math.ceil(s.length/n),c=chunk(s,z),base=crypto.createHash('sha256').update((ch.hwid||'')+(ch.userId||'')+config.SECRET_KEY).digest('hex'),k=c.map((_,i)=>crypto.createHash('md5').update(base+i).digest('hex'));return{chunks:c.map((x,i)=>({index:i,data:encChunk(x,k[i])})),keys:k,total:c.length}}
 async function log(r,a,s,d={}){const l={ip:u.ip(r),hwid:u.hwid(r),userId:r.headers['x-roblox-id']||r.body?.userId,ua:(r.headers['user-agent']||'').substring(0,100),action:a,success:s,client:getClient(r),ts:new Date().toISOString(),...d};await db.addLog(l);return l}
-function getSuspended(h,u,s){const now=Date.now();const chk=(m,k)=>{if(m.has(k)){const v=m.get(k);if(!v.expiresAt||new Date(v.expiresAt).getTime()>now)return v;m.delete(k)}return null};return chk(susp.s,s)||chk(susp.h,h)||chk(susp.u,String(u))}
+function getSuspended(h,us,s){const now=Date.now();const chk=(m,k)=>{if(m.has(k)){const v=m.get(k);if(!v.expiresAt||new Date(v.expiresAt).getTime()>now)return v;m.delete(k)}return null};return chk(susp.s,s)||chk(susp.h,h)||chk(susp.u,String(us))}
 async function loadSusp(){const a=await db.getAllSuspends();if(a)a.forEach(x=>{if(x.type==='hwid')susp.h.set(x.value,x);if(x.type==='userId')susp.u.set(x.value,x);if(x.type==='session')susp.s.set(x.value,x)})}
 async function getSrc(){const c=await db.getCachedScript();if(c)return c;if(!config.SCRIPT_SOURCE_URL)return null;try{const r=await axios.get(config.SCRIPT_SOURCE_URL);if(r.data){await db.setCachedScript(r.data);return r.data}}catch(e){}return null}
 function wrap(s,url){const o=(config.OWNER_USER_IDS||[]).join(','),w=(config.WHITELIST_USER_IDS||[]).join(','),sid=crypto.randomBytes(16).toString('hex'),spy=config.ANTI_SPY_ENABLED!==false,ab=config.AUTO_BAN_SPYTOOLS===true;
@@ -32,11 +47,11 @@ const vP=path.join(__dirname,'views'),TRAP=fs.existsSync(path.join(vP,'trap/inde
 app.use(helmet({contentSecurityPolicy:false}),cors({origin:'*',methods:['GET','POST','DELETE','OPTIONS']}),express.json({limit:'10mb'}),rateLimit({windowMs:60000,max:100}),express.static(path.join(vP)));
 const adminAuth=(req,res,next)=>{const k=req.headers['x-admin-key']||req.query.key;if(k&&config.ADMIN_KEY&&u.safeCmp(k,config.ADMIN_KEY))return next();res.status(403).json({success:false,error:'Unauthorized'})};
 
-// MIDDLEWARE (BAN CHECK)
+// MIDDLEWARE (BAN CHECK & LOGGING)
 app.use(async(req,res,next)=>{
-const p=req.path;if(p.startsWith(config.ADMIN_PATH||'/admin')||p==='/health'||p==='/loader')return next();
+const p=req.path;if(p.startsWith(config.ADMIN_PATH||'/admin')||p==='/health'||p==='/loader'||p==='/l'||p==='/api/loader.lua')return next();
 const ip=u.ip(req);
-if(!checkWL(null,null,req)){
+if(!await checkWL(null,null,req)){
 const b=await db.isBanned(null,ip,null);
 if(b.blocked){await log(req,'BLOCKED_IP',false,{reason:b.reason});return getClient(req)==='browser'?res.status(403).send(TRAP):res.send(genFake())}
 }
@@ -114,7 +129,7 @@ app.get('/api/admin/logs',adminAuth,async(req,res)=>{res.json({success:true,logs
 app.post('/api/admin/logs/clear',adminAuth,async(req,res)=>{await db.clearLogs();res.json({success:true})});
 app.get('/api/admin/bans',adminAuth,async(req,res)=>{res.json({success:true,bans:await db.getAllBans()})});
 app.post('/api/admin/bans',adminAuth,async(req,res)=>{const{hwid,ip,playerId,reason}=req.body;await db.addBan(hwid||playerId||ip,{hwid,playerId,ip,reason,banId:crypto.randomBytes(4).toString('hex'),ts:new Date().toISOString()});res.json({success:true})});
-app.delete('/api/admin/bans/:id',adminAuth,async(req,res)=>{res.json({success:await db.removeBanById(req.params.id)})}); // Method DELETE ok
+app.delete('/api/admin/bans/:id',adminAuth,async(req,res)=>{res.json({success:await db.removeBanById(req.params.id)})});
 app.get('/api/admin/sessions',adminAuth,(req,res)=>{const s=[];SESSIONS.forEach((v,k)=>s.push({sessionId:k,...v,age:Math.floor((Date.now()-v.created)/1000)}));res.json({success:true,sessions:s})});
 app.post('/api/admin/kill-session',adminAuth,async(req,res)=>{await suspendUser('session',req.body.sessionId,{reason:'Killed'});SESSIONS.delete(req.body.sessionId);res.json({success:true})});
 app.post('/api/admin/sessions/clear',adminAuth,(req,res)=>{const c=SESSIONS.size;SESSIONS.clear();res.json({success:true,cleared:c})});
