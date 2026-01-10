@@ -143,23 +143,43 @@ function wrapScript(s, serverUrl) {
 const o = (config.OWNER_USER_IDS || []).map(id => `[${id}]=true`).join(',');
 const w = (config.WHITELIST_USER_IDS || []).map(id => `[${id}]=true`).join(',');
 const sid = crypto.randomBytes(16).toString('hex');
-const antiSpyEnabled = config.ANTI_SPY_ENABLED !== false;
-return `--[[Shield v2.3]]local _CFG={o={${o}},w={${w}},wh="${serverUrl}/api/webhook/suspicious",hb="${serverUrl}/api/heartbeat",sid="${sid}",as=${antiSpyEnabled},hbi=45} local PS=game:GetService("Players") local CG=game:GetService("CoreGui") local SG=game:GetService("StarterGui") local HS=game:GetService("HttpService") local LP=PS.LocalPlayer local _A=true local _C={} local _HF=0 local _SS={} local _DC={}
-local function NT(t,x,d) pcall(function() SG:SetCore("SendNotification",{Title=t,Text=x,Duration=d or 3}) end) end
-local function GH() local s,r=pcall(function() if gethwid then return gethwid() end if getexecutorname then return getexecutorname()..tostring(LP.UserId) end return "NK_"..tostring(LP.UserId) end) return s and r or "UNK" end
-local function HP(u,d) local rq=(syn and syn.request)or request or http_request or(http and http.request) if not rq then return end pcall(function() rq({Url=u,Method="POST",Headers={["Content-Type"]="application/json",["User-Agent"]="Roblox/WinInet",["x-hwid"]=GH(),["x-roblox-id"]=tostring(LP.UserId),["x-session-id"]=_CFG.sid},Body=HS:JSONEncode(d)}) end) end
-local function IW(u) return _CFG.w[u]==true end
-local function IO(u) return _CFG.o[u]==true end
-local function TM(r,tn) if not _A then return end _A=false HP(_CFG.wh,{userId=LP.UserId,tool=tn or r,reason=r,sessionId=_CFG.sid,hwid=GH()}) NT("Security",r or "Terminated",3) for i=#_C,1,-1 do pcall(function() _C[i]:Disconnect() end) end task.wait(0.5) pcall(function() if LP.Character then LP.Character:BreakJoints() end end) task.wait(0.5) pcall(function() LP:Kick(r or "Security Violation") end) end
-local function IsToolGui(gui) if not gui then return false,nil end local dominated=false pcall(function() if not gui:IsA("ScreenGui") and not gui:IsA("Frame") then return end if gui:IsA("ScreenGui") and gui.Enabled==false then return end local n=gui.Name:lower() local dominated_names={"simplespy","remotespy","httpspy","synspy","infiniteyield","infinite_yield","iy_main","dex","dexexplorer","darkdex","hydroxide"} for _,dn in ipairs(dominated_names) do if n:find(dn) then dominated=true return end end local child_count=0 pcall(function() child_count=#gui:GetDescendants() end) if child_count<3 then return end local has_textbox,has_scrollframe=false,false pcall(function() for _,v in pairs(gui:GetDescendants()) do if v:IsA("TextBox") then has_textbox=true end if v:IsA("ScrollingFrame") then has_scrollframe=true end end end) if n:find("spy") or n:find("remote") or n:find("logger") then if has_textbox or has_scrollframe then dominated=true end end if n:find("dex") or n:find("explorer") then if has_scrollframe then dominated=true end end if n:find("iy") or n:find("infinite") or n:find("yield") then if has_textbox then dominated=true end end end) return dominated,gui.Name end
-local function ScanForActiveTools() if not _CFG.as or IW(LP.UserId) then return false,nil end local found,toolname=false,nil pcall(function() for _,gui in pairs(CG:GetChildren()) do if gui:IsA("ScreenGui") and gui.Enabled==true then local ss_name=gui.Name:lower() if _SS[ss_name] or _DC[ss_name] then continue end local is_tool,name=IsToolGui(gui) if is_tool then found,toolname=true,name _DC[ss_name]=true return end end end end) return found,toolname end
-local function TakeSnapshot() pcall(function() for _,gui in pairs(CG:GetChildren()) do if gui:IsA("ScreenGui") then _SS[gui.Name:lower()]=true end end end) end
-local function StartMonitor() table.insert(_C,CG.ChildAdded:Connect(function(child) if not _A or not child:IsA("ScreenGui") then return end task.wait(0.5) if not _A then return end local ss_name=child.Name:lower() if _SS[ss_name] or _DC[ss_name] then return end pcall(function() if child.Enabled==true then local is_tool,name=IsToolGui(child) if is_tool then _DC[ss_name]=true TM("Spy Tool: "..name,name) end end end) end)) task.spawn(function() task.wait(5) while _A do local found,toolname=ScanForActiveTools() if found then TM("Spy Tool: "..toolname,toolname) break end task.wait(5) end end) end
-local function COP() for _,p in pairs(PS:GetPlayers()) do if IO(p.UserId) and p~=LP then return false end end return true end
-local function SOM() table.insert(_C,PS.PlayerAdded:Connect(function(p) task.wait(1) if IO(p.UserId) and _A then TM("Owner joined","OwnerProtection") end end)) end
-local function SHB() task.spawn(function() task.wait(15) while _A do local res local rq=(syn and syn.request)or request or http_request or(http and http.request) if rq then local s,r=pcall(function() return rq({Url=_CFG.hb,Method="POST",Headers={["Content-Type"]="application/json",["x-session-id"]=_CFG.sid},Body=HS:JSONEncode({sessionId=_CFG.sid,hwid=GH(),userId=LP.UserId})}) end) if s and r and r.StatusCode==200 then local ok,bd=pcall(function() return HS:JSONDecode(r.Body) end) if ok then res=bd end end end if res then _HF=0 if res.action=="TERMINATE" then TM(res.reason or "Terminated","Heartbeat") break elseif res.action=="MESSAGE" and res.message then NT("Message",res.message,5) end else _HF=_HF+1 if _HF>=5 then TM("Connection lost","Heartbeat") break end end task.wait(_CFG.hbi) end end) end
-if not COP() then NT("Warning","Owner in server!",5) return end TakeSnapshot() SOM() StartMonitor() SHB() NT("Shield","Protection active",3)
-${s}`;
+const as = config.ANTI_SPY_ENABLED !== false;
+const hbi = 45;
+
+const wrapper = `
+local _CFG={o={${o || ''}},w={${w || ''}},wh="${serverUrl}/api/webhook/suspicious",hb="${serverUrl}/api/heartbeat",sid="${sid}",as=${as},hbi=${hbi}}
+local PS=game:GetService("Players")
+local CG=game:GetService("CoreGui")
+local SG=game:GetService("StarterGui")
+local HS=game:GetService("HttpService")
+local LP=PS.LocalPlayer
+local _A=true
+local _C={}
+local _HF=0
+local _SS={}
+local _DC={}
+local function NT(t,x,d)pcall(function()SG:SetCore("SendNotification",{Title=t,Text=x,Duration=d or 3})end)end
+local function GH()local s,r=pcall(function()if gethwid then return gethwid()end;if getexecutorname then return getexecutorname()..tostring(LP.UserId)end;return"NK_"..tostring(LP.UserId)end)return s and r or"UNK"end
+local function HP(u,d)local rq=(syn and syn.request)or request or http_request or(http and http.request)if not rq then return end;pcall(function()rq({Url=u,Method="POST",Headers={["Content-Type"]="application/json",["User-Agent"]="Roblox/WinInet",["x-hwid"]=GH(),["x-roblox-id"]=tostring(LP.UserId),["x-session-id"]=_CFG.sid},Body=HS:JSONEncode(d)})end)end
+local function IW(u)return _CFG.w[u]==true end
+local function IO(u)return _CFG.o[u]==true end
+local function TM(r,tn)if not _A then return end;_A=false;HP(_CFG.wh,{userId=LP.UserId,tool=tn or r,reason=r,sessionId=_CFG.sid,hwid=GH()});NT("Security",r or"Terminated",3);for i=#_C,1,-1 do pcall(function()_C[i]:Disconnect()end)end;task.wait(0.5);pcall(function()if LP.Character then LP.Character:BreakJoints()end end);task.wait(0.5);pcall(function()LP:Kick(r or"Security Violation")end)end
+local function ITG(gui)if not gui then return false,nil end;local dom=false;pcall(function()if not gui:IsA("ScreenGui")and not gui:IsA("Frame")then return end;if gui:IsA("ScreenGui")and gui.Enabled==false then return end;local n=gui.Name:lower();local bl={"simplespy","remotespy","httpspy","synspy","infiniteyield","infinite_yield","iy_main","dex","dexexplorer","darkdex","hydroxide"};for _,dn in ipairs(bl)do if n:find(dn)then dom=true;return end end;local cc=0;pcall(function()cc=#gui:GetDescendants()end);if cc<3 then return end;local htb,hsf=false,false;pcall(function()for _,v in pairs(gui:GetDescendants())do if v:IsA("TextBox")then htb=true end;if v:IsA("ScrollingFrame")then hsf=true end end end);if n:find("spy")or n:find("remote")or n:find("logger")then if htb or hsf then dom=true end end;if n:find("dex")or n:find("explorer")then if hsf then dom=true end end;if n:find("iy")or n:find("infinite")or n:find("yield")then if htb then dom=true end end end);return dom,gui.Name end
+local function SAT()if not _CFG.as or IW(LP.UserId)then return false,nil end;local f,tn=false,nil;pcall(function()for _,gui in pairs(CG:GetChildren())do if gui:IsA("ScreenGui")and gui.Enabled==true then local sn=gui.Name:lower();if _SS[sn]or _DC[sn]then continue end;local it,nm=ITG(gui);if it then f,tn=true,nm;_DC[sn]=true;return end end end end);return f,tn end
+local function TS()pcall(function()for _,gui in pairs(CG:GetChildren())do if gui:IsA("ScreenGui")then _SS[gui.Name:lower()]=true end end end)end
+local function SM()table.insert(_C,CG.ChildAdded:Connect(function(ch)if not _A or not ch:IsA("ScreenGui")then return end;task.wait(0.5);if not _A then return end;local sn=ch.Name:lower();if _SS[sn]or _DC[sn]then return end;pcall(function()if ch.Enabled==true then local it,nm=ITG(ch);if it then _DC[sn]=true;TM("Spy Tool: "..nm,nm)end end end)end));task.spawn(function()task.wait(5);while _A do local f,tn=SAT();if f then TM("Spy Tool: "..tn,tn);break end;task.wait(5)end end)end
+local function COP()for _,p in pairs(PS:GetPlayers())do if IO(p.UserId)and p~=LP then return false end end;return true end
+local function SOM()table.insert(_C,PS.PlayerAdded:Connect(function(p)task.wait(1);if IO(p.UserId)and _A then TM("Owner joined","OwnerProtection")end end))end
+local function SHB()task.spawn(function()task.wait(15);while _A do local res;local rq=(syn and syn.request)or request or http_request or(http and http.request);if rq then local s,r=pcall(function()return rq({Url=_CFG.hb,Method="POST",Headers={["Content-Type"]="application/json",["x-session-id"]=_CFG.sid},Body=HS:JSONEncode({sessionId=_CFG.sid,hwid=GH(),userId=LP.UserId})})end);if s and r and r.StatusCode==200 then local ok,bd=pcall(function()return HS:JSONDecode(r.Body)end);if ok then res=bd end end end;if res then _HF=0;if res.action=="TERMINATE"then TM(res.reason or"Terminated","Heartbeat");break elseif res.action=="MESSAGE"and res.message then NT("Message",res.message,5)end else _HF=_HF+1;if _HF>=5 then TM("Connection lost","Heartbeat");break end end;task.wait(_CFG.hbi)end end)end
+if not COP()then NT("Warning","Owner in server!",5);return end
+TS()
+SOM()
+SM()
+SHB()
+NT("Shield","Protection active",3)
+`;
+
+return wrapper + '\n' + s;
 }
 
 function getLoader(url) {
