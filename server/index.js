@@ -62,7 +62,7 @@ function shouldBlock(req) {
 function genFakeScript() {
     const rS = (l) => { const c = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'; let s = ''; for (let i = 0; i < l; i++) s += c[Math.floor(Math.random() * c.length)]; return s; };
     const rH = (l) => { let h = ''; for (let i = 0; i < l; i++) h += Math.floor(Math.random() * 16).toString(16); return h; };
-    return `--[[ Protected by Script Shield v2.0 | Hash: ${rH(32)} ]]\nlocal ${rS(6)} = "${rS(32)}";\nlocal ${rS(5)} = function(${rS(4)})\n return string.byte(${rS(4)}) * ${Math.floor(Math.random() * 100)};\nend;\n--[[ Obfuscation applied ]]`;
+    return `--[[ Protected by Script Shield For Bot | Hash: ${rH(100)} ]]\nlocal ${rS(100)} = "${rS(320)}";\nlocal ${rS(5)} = function(${rS(4)})\n return string.byte(${rS(100)}) * ${Math.floor(Math.random() * 1000)};\nend;\n--[[ Obfuscation For Bøt]]`;
 }
 
 // === ENCRYPTION & CHUNKING ===
