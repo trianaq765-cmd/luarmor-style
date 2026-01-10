@@ -258,6 +258,7 @@ app.use(rateLimit({ windowMs: 60000, max: 100, keyGenerator: r => getIP(r) }));
 app.use('/admin/css', express.static(path.join(viewsPath, 'admin/css')));
 app.use('/admin/js', express.static(path.join(viewsPath, 'admin/js')));
 
+// === MIDDLEWARE - Skip loader karena di-handle terpisah ===
 app.use(async (req, res, next) => {
     const adminPath = config.ADMIN_PATH || '/admin';
     if (req.path.startsWith(adminPath) || req.path === '/health') return next();
@@ -287,7 +288,7 @@ app.get(adminPath, (req, res) => { const f = path.join(viewsPath, 'admin/index.h
 app.get('/health', (req, res) => res.json({ status: 'ok', redis: db.isRedisConnected?.() ?? false }));
 
 // =====================================================
-// === FIXED LOADER ENDPOINT - BAN CHECK INCLUDED ===
+// === FIXED LOADER ENDPOINT - DUAL BOT HANDLING ===
 // =====================================================
 app.get(['/loader', '/api/loader.lua', '/api/loader', '/l'], async (req, res) => {
     const ct = getClientType(req);
@@ -295,10 +296,13 @@ app.get(['/loader', '/api/loader.lua', '/api/loader', '/l'], async (req, res) =>
     const hwid = getHWID(req);
     const userId = req.headers['x-roblox-id'] || null;
     
-    // === FIX: Cek ban terlebih dahulu sebelum proses apapun ===
+    // ═══════════════════════════════════════════════════════════
+    // PRIORITY 1: Cek BAN (IP/HWID/UserID) → Return 403 ERROR
+    // Bot yang sudah di-ban akan mendapat error, bukan fake script
+    // ═══════════════════════════════════════════════════════════
     const ban = await db.isBanned(hwid, ip, userId);
     if (ban.blocked) {
-        console.log(`[Loader] Banned access blocked - IP: ${ip}, HWID: ${hwid}, UserID: ${userId}, Reason: ${ban.reason}`);
+        console.log(`[Loader] 🚫 BANNED ACCESS BLOCKED - IP: ${ip}, HWID: ${hwid}, UserID: ${userId}, Reason: ${ban.reason}`);
         await logAccess(req, 'LOADER_BANNED', false, { 
             clientType: ct, 
             ip, 
@@ -307,30 +311,43 @@ app.get(['/loader', '/api/loader.lua', '/api/loader', '/l'], async (req, res) =>
             banReason: ban.reason 
         });
         
-        // Browser banned = tampilkan TRAP_HTML
+        // Browser yang di-ban = 403 + TRAP_HTML
         if (ct === 'browser') {
             return res.status(403).type('html').send(TRAP_HTML);
         }
-        // Bot/executor banned = tampilkan fake script
-        return res.status(200).type('text/plain').send(genFakeScript());
+        
+        // Bot/Executor yang di-ban = 403 JSON Error (blocked total)
+        return res.status(403).json({ 
+            success: false, 
+            error: 'Access Denied', 
+            code: 'BANNED',
+            message: 'Your access has been permanently revoked.'
+        });
     }
     
-    // Browser normal = tampilkan loader page
+    // ═══════════════════════════════════════════════════════════
+    // PRIORITY 2: Browser normal = tampilkan loader page HTML
+    // ═══════════════════════════════════════════════════════════
     if (ct === 'browser') {
         return res.status(200).type('html').send(LOADER_HTML);
     }
     
-    // Block bot/unknown yang tidak di-ban tapi terdeteksi sebagai bot
+    // ═══════════════════════════════════════════════════════════
+    // PRIORITY 3: Bot terdeteksi (tidak di-ban) = Fake Script
+    // Bot akan tertipu mengira dapat script asli
+    // ═══════════════════════════════════════════════════════════
     if (shouldBlock(req)) {
-        console.log(`[Loader] Blocked ${ct} from ${ip}`);
-        await logAccess(req, 'LOADER_BLOCKED', false, { clientType: ct, ip });
+        console.log(`[Loader] 🤖 BOT DETECTED (not banned) - Type: ${ct}, IP: ${ip} → Sending Fake Script`);
+        await logAccess(req, 'LOADER_BOT_FAKE', false, { clientType: ct, ip });
         return res.status(200).type('text/plain').send(genFakeScript());
     }
     
-    // Log akses sukses
-    await logAccess(req, 'LOADER', true, { clientType: ct, userId: userId });
+    // ═══════════════════════════════════════════════════════════
+    // PRIORITY 4: Executor valid = berikan loader asli
+    // ═══════════════════════════════════════════════════════════
+    console.log(`[Loader] ✅ Valid executor access - IP: ${ip}, UserID: ${userId}`);
+    await logAccess(req, 'LOADER', true, { clientType: ct, userId });
     
-    // Check whitelist dan generate loader
     const isWL = await checkWhitelist(hwid, userId, req);
     const url = process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`;
     
