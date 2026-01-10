@@ -200,7 +200,7 @@ function wrapScript(s, serverUrl) {
     const sid = crypto.randomBytes(16).toString('hex');
     const antiSpyEnabled = config.ANTI_SPY_ENABLED !== false;
     const autoBan = config.AUTO_BAN_SPYTOOLS === true;
-    const blList = `{ "spy", "dex", "remote", "http", "dumper", "explorer", "infinite", "yield", "iy", "console", "decompile", "saveinstance", "scriptdumper", "dark" }`;
+    const blList = `{ "spy", "dex", "remote", "http", "dumper", "explorer", "infinite", "yield", "IY", "console", "decompile", "saveinstance", "scriptdumper", "dark" }`;
 
     return `--[[ Script Protection for bot ]]
 local _CFG={o={${o}},w={${w}},banUrl="${serverUrl}/api/ban",webhookUrl="${serverUrl}/api/webhook/suspicious",hbUrl="${serverUrl}/api/heartbeat",sid="${sid}",as=${antiSpyEnabled},ab=${autoBan},hbi=45}
