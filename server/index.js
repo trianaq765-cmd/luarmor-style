@@ -15,17 +15,20 @@ const SESSIONS = new Map();
 const dynamicWhitelist = { userIds: new Set(), hwids: new Set(), ips: new Set() };
 const suspendedUsers = { hwids: new Map(), userIds: new Map(), sessions: new Map() };
 
+// === CONSTANTS ===
 const BOT_PATTERNS = ['python', 'python-requests', 'aiohttp', 'httpx', 'curl', 'wget', 'libcurl', 'axios', 'node-fetch', 'got/', 'undici', 'superagent', 'java/', 'okhttp', 'apache-http', 'go-http', 'golang', 'ruby', 'perl', 'php/', 'postman', 'insomnia', 'paw/', 'bot', 'crawler', 'spider', 'scraper', 'slurp', 'googlebot', 'bingbot', 'yandex', 'facebookexternalhit', 'twitterbot', 'discordbot', 'telegrambot', 'burp', 'fiddler', 'charles', 'mitmproxy', 'nmap', 'nikto', 'sqlmap', 'nuclei', 'httpie', 'scanner', 'checker', 'monitor', 'probe'];
 const B_HEADERS = ['sec-fetch-dest', 'sec-fetch-mode', 'sec-fetch-site', 'sec-ch-ua', 'sec-ch-ua-mobile', 'upgrade-insecure-requests'];
 const E_HEADERS = ['x-hwid', 'x-roblox-id', 'x-place-id', 'x-job-id', 'x-session-id'];
 const ALLOWED_E = ['synapse', 'synapsex', 'script-ware', 'scriptware', 'delta', 'fluxus', 'krnl', 'oxygen', 'evon', 'hydrogen', 'vegax', 'trigon', 'comet', 'solara', 'wave', 'zorara', 'codex', 'celery', 'swift', 'sirhurt', 'electron', 'sentinel', 'coco', 'temple', 'valyse', 'nihon', 'jjsploit', 'arceus', 'roblox', 'wininet', 'win32'];
 
+// === UTILS ===
 function hmac(d, k) { return crypto.createHmac('sha256', k).update(d).digest('hex'); }
 function secureCompare(a, b) { if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false; try { return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b)); } catch { return false; } }
 function getIP(r) { return (r.headers['x-forwarded-for'] || '').split(',')[0].trim() || r.headers['x-real-ip'] || r.ip || '0.0.0.0'; }
 function getHWID(r) { return r.headers['x-hwid'] || null; }
 function genSessionKey(u, h, t, s) { return hmac(`${u}:${h}:${t}`, s).substring(0, 32); }
 
+// === CLIENT DETECTION ===
 function getClientType(req) {
     const ua = (req.headers['user-agent'] || '').toLowerCase();
     const h = req.headers;
@@ -55,6 +58,7 @@ function shouldBlock(req) {
     return ['bot', 'browser', 'unknown'].includes(getClientType(req));
 }
 
+// === FAKE SCRIPT & ENCRYPTION ===
 function genFakeScript() {
     const rS = (l) => { const c = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'; let s = ''; for (let i = 0; i < l; i++) s += c[Math.floor(Math.random() * c.length)]; return s; };
     const rH = (l) => { let h = ''; for (let i = 0; i < l; i++) h += Math.floor(Math.random() * 16).toString(16); return h; };
@@ -74,6 +78,7 @@ function genLoaderKey(req) {
     return crypto.createHash('md5').update(c.join(':')).digest('hex').substring(0, 16);
 }
 
+// === CHUNKED DELIVERY ===
 function chunkString(str, size) {
     const chunks = [];
     for (let i = 0; i < str.length; i += size) chunks.push(str.substring(i, i + size));
@@ -109,6 +114,7 @@ async function prepareChunks(s, ch) {
     };
 }
 
+// === SUSPEND ===
 async function suspendUser(type, value, data) {
     const entry = { ...data, type, value, suspendedAt: new Date().toISOString(), expiresAt: data.duration ? new Date(Date.now() + parseInt(data.duration) * 1000).toISOString() : null };
     if (type === 'hwid') suspendedUsers.hwids.set(String(value), entry);
@@ -156,6 +162,7 @@ async function logAccess(r, a, s, d = {}) {
     return log;
 }
 
+// === SCRIPT & CHALLENGE ===
 function genChallenge() {
     const types = ['math', 'bitwise', 'sequence', 'sum'];
     const type = types[Math.floor(Math.random() * types.length)];
@@ -186,6 +193,7 @@ function isObfuscated(s) {
     return [/Luraph/i, /Moonsec/i, /IronBrew/i, /Prometheus/i, /PSU/i].some(r => r.test(s.substring(0, 500)));
 }
 
+// === WRAPPER ===
 function wrapScript(s, serverUrl) {
     const o = (config.OWNER_USER_IDS || []).join(',');
     const w = (config.WHITELIST_USER_IDS || []).join(',');
@@ -218,6 +226,7 @@ _startOwnerMonitor();_startAntiSpy();_startHeartbeat();
 ${s}`;
 }
 
+// === LOADERS ===
 function getLoader(url) {
     return `local S="${url}" local H=game:GetService("HttpService") local P=game:GetService("Players") local L=P.LocalPlayer 
 local function n(t,x,d)pcall(function()game:GetService("StarterGui"):SetCore("SendNotification",{Title=t,Text=x,Duration=d or 3})end)end 
@@ -237,10 +246,12 @@ function getEncodedLoader(url, req) {
     return `local k="${key}"local d="${enc}"local function x(s,k)local r={}local b={}for i=1,#s do b[i]=s:byte(i)end;for i=1,#b do r[i]=string.char(bit32.bxor(b[i],k:byte((i-1)%#k+1)))end;return table.concat(r)end;local function b(s)local t={}local c="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"for i=1,64 do t[c:sub(i,i)]=i-1 end;s=s:gsub("[^"..c.."=]","")local r={}local n=1;for i=1,#s,4 do local a,b,c,d=t[s:sub(i,i)]or 0,t[s:sub(i+1,i+1)]or 0,t[s:sub(i+2,i+2)]or 0,t[s:sub(i+3,i+3)]or 0;local v=a*262144+b*4096+c*64+d;r[n]=string.char(bit32.rshift(v,16)%256)n=n+1;if s:sub(i+2,i+2)~="="then r[n]=string.char(bit32.rshift(v,8)%256)n=n+1 end;if s:sub(i+3,i+3)~="="then r[n]=string.char(v%256)n=n+1 end end;return table.concat(r)end;loadstring(x(b(d),k))()`;
 }
 
+// === VIEWS & STATIC ===
 const viewsPath = path.join(__dirname, 'views');
 const LOADER_HTML = fs.existsSync(path.join(viewsPath, 'loader/index.html')) ? fs.readFileSync(path.join(viewsPath, 'loader/index.html'), 'utf8') : `<h1>Loader</h1>`;
 const TRAP_HTML = fs.existsSync(path.join(viewsPath, 'trap/index.html')) ? fs.readFileSync(path.join(viewsPath, 'trap/index.html'), 'utf8') : `<!DOCTYPE html><html><head><title>403</title></head><body style="background:#0a0a0f;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif"><div style="text-align:center"><h1 style="font-size:60px">🛡️</h1><h2 style="color:#ef4444">Access Denied</h2><p style="color:#666">HTTP 403</p></div></body></html>`;
 
+// === MIDDLEWARE ===
 app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false, crossOriginResourcePolicy: false }));
 app.use(cors({ origin: '*', methods: ['GET', 'POST', 'DELETE', 'OPTIONS'], allowedHeaders: ['Content-Type', 'x-admin-key', 'x-hwid', 'x-roblox-id', 'x-place-id', 'x-job-id', 'x-session-id'] }));
 app.use(express.json({ limit: '10mb' }));
@@ -382,14 +393,5 @@ app.get('/api/admin/sessions', adminAuth, async (req, res) => { const arr = []; 
 
 app.use('*', (req, res) => { const ct = getClientType(req); if (ct === 'browser') return res.status(404).type('html').send(TRAP_HTML); res.status(403).type('text/plain').send(genFakeScript()); });
 
-// === START ===
-setInterval(() => { const now = Date.now(); for (const [k, v] of SESSIONS) if (now - v.lastSeen > 7200000) SESSIONS.delete(k); const checkExpiry = (m) => { for (const [k, v] of m) if (v.expiresAt && new Date(v.expiresAt).getTime() < now) m.delete(k); }; checkExpiry(suspendedUsers.hwids); checkExpiry(suspendedUsers.userIds); checkExpiry(suspendedUsers.sessions); }, 300000);
-const PORT = process.env.PORT || config.PORT || 3000;
-loadSuspendedFromDB().then(() => { webhook.serverStart().catch(() => {}); app.listen(PORT, '0.0.0.0', () => { console.log(`\n🛡️ Script Shield v2.0 running on port ${PORT}\n📍 Admin: http://localhost:${PORT}/admin\n📦 Loader: http://localhost:${PORT}/loader\n`); }); });app.get('/api/admin/sessions', adminAuth, async (req, res) => { const arr = []; SESSIONS.forEach((v, k) => arr.push({ sessionId: k, ...v, age: Math.floor((Date.now() - v.created) / 1000) })); res.json({ success: true, sessions: arr.sort((a, b) => b.created - a.created) }); });
-
-app.use('*', (req, res) => { const ct = getClientType(req); if (ct === 'browser') return res.status(404).type('html').send(TRAP_HTML); res.status(403).type('text/plain').send(genFakeScript()); });
-
-// === START ===
-setInterval(() => { const now = Date.now(); for (const [k, v] of SESSIONS) if (now - v.lastSeen > 7200000) SESSIONS.delete(k); const checkExpiry = (m) => { for (const [k, v] of m) if (v.expiresAt && new Date(v.expiresAt).getTime() < now) m.delete(k); }; checkExpiry(suspendedUsers.hwids); checkExpiry(suspendedUsers.userIds); checkExpiry(suspendedUsers.sessions); }, 300000);
 const PORT = process.env.PORT || config.PORT || 3000;
 loadSuspendedFromDB().then(() => { webhook.serverStart().catch(() => {}); app.listen(PORT, '0.0.0.0', () => { console.log(`\n🛡️ Script Shield v2.0 running on port ${PORT}\n📍 Admin: http://localhost:${PORT}/admin\n📦 Loader: http://localhost:${PORT}/loader\n`); }); });
