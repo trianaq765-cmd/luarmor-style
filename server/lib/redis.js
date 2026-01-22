@@ -1,285 +1,179 @@
-const config = require('../config');
-const fs = require('fs');
-const path = require('path');
-
-// Setup variabel
-let redis = null;
-let useRedis = false;
-
-// Setup File Storage (Fallback)
-const dataDir = path.join(__dirname, '..', 'data');
-const DATA_FILE = path.join(dataDir, 'storage.json');
-
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-
-// In-Memory Data
-const memoryStore = {
-    bans: new Map(),
-    logs: [],
-    challenges: new Map(),
-    cache: new Map(),
-    suspends: new Map(),
-    stats: { success: 0, challenges: 0, bans: 0 }
-};
-
-// Fungsi File System
-function loadFromFile() {
-    try {
-        if (fs.existsSync(DATA_FILE)) {
-            const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-            if (data.bans) Object.entries(data.bans).forEach(([k, v]) => memoryStore.bans.set(k, v));
-            if (data.logs) memoryStore.logs = data.logs.slice(0, 1000);
-            if (data.stats) memoryStore.stats = data.stats;
-            if (data.suspends) Object.entries(data.suspends).forEach(([k, v]) => memoryStore.suspends.set(k, v));
-            console.log(`[Storage] Loaded from file: ${memoryStore.bans.size} bans`);
-        }
-    } catch (e) { console.error('Load Error:', e.message); }
+const crypto=require('crypto');
+let redis=null;
+let memoryStore={bans:{},challenges:{},logs:[],suspends:{},cache:{}};
+const REDIS_URL=process.env.REDIS_URL||process.env.KV_URL||null;
+async function initRedis(){
+ if(REDIS_URL){
+  try{
+   const{createClient}=require('redis');
+   redis=createClient({url:REDIS_URL});
+   redis.on('error',e=>console.error('Redis error:',e));
+   await redis.connect();
+   console.log('✅ Redis connected');
+   return true;
+  }catch(e){console.error('Redis init failed:',e.message);redis=null}
+ }
+ console.log('⚠️ Using memory store (data will be lost on restart)');
+ return false;
 }
-
-function saveToFile() {
-    try {
-        const data = {
-            bans: Object.fromEntries(memoryStore.bans),
-            logs: memoryStore.logs.slice(0, 500),
-            stats: memoryStore.stats,
-            suspends: Object.fromEntries(memoryStore.suspends),
-            savedAt: new Date().toISOString()
-        };
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data));
-    } catch (e) { console.error('Save Error:', e.message); }
+function isRedisConnected(){return redis&&redis.isOpen}
+async function addBan(key,data){
+ const banId=data.banId||crypto.randomBytes(8).toString('hex').toUpperCase();
+ const banData={...data,banId,key,ts:data.ts||new Date().toISOString()};
+ if(redis){
+  await redis.hSet('shield:bans',banId,JSON.stringify(banData));
+ }else{
+  memoryStore.bans[banId]=banData;
+ }
+ return banId;
 }
-
-// Auto Save interval
-setInterval(saveToFile, 60000);
-loadFromFile();
-
-// Init Redis
-(async () => {
-    if (config.REDIS_URL) {
-        console.log('🔄 Connecting to Redis...');
-        try {
-            const Redis = require('ioredis');
-            redis = new Redis(config.REDIS_URL, {
-                maxRetriesPerRequest: 3,
-                tls: config.REDIS_URL.startsWith('rediss://') ? {} : undefined
-            });
-            
-            redis.on('error', (e) => console.error('Redis Error:', e.message));
-            await redis.ping();
-            useRedis = true;
-            console.log('✅ Redis Connected');
-        } catch (e) {
-            console.error('❌ Redis Failed:', e.message);
-            useRedis = false;
-        }
-    }
-})();
-
-// === EXPORTED FUNCTIONS ===
-
-// 1. Bans
-async function addBan(key, data) {
-    memoryStore.stats.bans++;
-    memoryStore.bans.set(key, data);
-    if (useRedis) await redis.hset('bans', key, JSON.stringify(data));
-    saveToFile();
-    return true;
+async function getAllBans(){
+ if(redis){
+  const all=await redis.hGetAll('shield:bans');
+  return Object.values(all).map(v=>{try{return JSON.parse(v)}catch{return null}}).filter(Boolean);
+ }
+ return Object.values(memoryStore.bans);
 }
-
-async function removeBan(key) {
-    memoryStore.bans.delete(key);
-    if (useRedis) await redis.hdel('bans', key);
-    saveToFile();
-    return true;
+async function removeBanById(banId){
+ if(!banId)return false;
+ const id=String(banId).toUpperCase();
+ if(redis){
+  const exists=await redis.hExists('shield:bans',id);
+  if(exists){await redis.hDel('shield:bans',id);return true}
+  const all=await redis.hGetAll('shield:bans');
+  for(const[k,v]of Object.entries(all)){
+   try{
+    const ban=JSON.parse(v);
+    if(ban.banId&&ban.banId.toUpperCase()===id){await redis.hDel('shield:bans',k);return true}
+   }catch{}
+  }
+  return false;
+ }
+ if(memoryStore.bans[id]){delete memoryStore.bans[id];return true}
+ for(const[k,v]of Object.entries(memoryStore.bans)){
+  if(v.banId&&v.banId.toUpperCase()===id){delete memoryStore.bans[k];return true}
+ }
+ return false;
 }
-
-async function removeBanById(banId) {
-    for (const [key, value] of memoryStore.bans) {
-        if (value.banId === banId) {
-            memoryStore.bans.delete(key);
-            if (useRedis) await redis.hdel('bans', key);
-            saveToFile();
-            return true;
-        }
-    }
-    return false;
+async function clearBans(){
+ if(redis){
+  const all=await redis.hGetAll('shield:bans');
+  const count=Object.keys(all).length;
+  if(count>0)await redis.del('shield:bans');
+  return count;
+ }
+ const count=Object.keys(memoryStore.bans).length;
+ memoryStore.bans={};
+ return count;
 }
-
-async function isBanned(hwid, ip, playerId) {
-    const keys = [hwid, ip, playerId ? String(playerId) : null].filter(Boolean);
-    if (keys.length === 0) return { blocked: false };
-
-    // Cek Redis
-    if (useRedis) {
-        for (const key of keys) {
-            const data = await redis.hget('bans', key);
-            if (data) {
-                const p = JSON.parse(data);
-                return { blocked: true, reason: p.reason || 'Banned', banId: p.banId };
-            }
-        }
-    }
-
-    // Cek Memory
-    for (const key of keys) {
-        if (memoryStore.bans.has(key)) {
-            const d = memoryStore.bans.get(key);
-            return { blocked: true, reason: d.reason || 'Banned', banId: d.banId };
-        }
-    }
-    return { blocked: false };
+async function isBanned(hwid,ip,userId){
+ const bans=await getAllBans();
+ for(const ban of bans){
+  if(hwid&&ban.hwid&&String(ban.hwid).toLowerCase()===String(hwid).toLowerCase())return{blocked:true,reason:ban.reason||'Banned (HWID)',banId:ban.banId};
+  if(ip&&ban.ip&&ban.ip===ip)return{blocked:true,reason:ban.reason||'Banned (IP)',banId:ban.banId};
+  if(userId&&ban.playerId&&String(ban.playerId)===String(userId))return{blocked:true,reason:ban.reason||'Banned (Player)',banId:ban.banId};
+ }
+ return{blocked:false};
 }
-
-async function getAllBans() {
-    if (useRedis) {
-        try {
-            const all = await redis.hgetall('bans');
-            return Object.values(all).map(v => JSON.parse(v)).sort((a, b) => new Date(b.ts) - new Date(a.ts));
-        } catch (e) {}
-    }
-    return Array.from(memoryStore.bans.values()).sort((a, b) => new Date(b.ts) - new Date(a.ts));
+async function getBanCount(){
+ if(redis){
+  try{return await redis.hLen('shield:bans')}catch{return 0}
+ }
+ return Object.keys(memoryStore.bans).length;
 }
-
-async function clearBans() {
-    memoryStore.bans.clear();
-    if (useRedis) await redis.del('bans');
-    saveToFile();
-    return true;
+async function setChallenge(id,data,ttl=120){
+ if(redis){
+  await redis.setEx(`shield:challenge:${id}`,ttl,JSON.stringify(data));
+ }else{
+  memoryStore.challenges[id]={...data,expiresAt:Date.now()+ttl*1000};
+ }
 }
-
-// 2. Challenges & Auth
-async function setChallenge(id, data, ttl = 120) {
-    memoryStore.stats.challenges++;
-    memoryStore.challenges.set(id, { ...data, expiresAt: Date.now() + (ttl * 1000) });
-    if (useRedis) await redis.setex(`challenge:${id}`, ttl, JSON.stringify(data));
-    return true;
+async function getChallenge(id){
+ if(redis){
+  const d=await redis.get(`shield:challenge:${id}`);
+  return d?JSON.parse(d):null;
+ }
+ const c=memoryStore.challenges[id];
+ if(c&&c.expiresAt>Date.now())return c;
+ if(c)delete memoryStore.challenges[id];
+ return null;
 }
-
-async function getChallenge(id) {
-    if (useRedis) {
-        const data = await redis.get(`challenge:${id}`);
-        if (data) return JSON.parse(data);
-    }
-    const data = memoryStore.challenges.get(id);
-    if (data && data.expiresAt > Date.now()) return data;
-    return null;
+async function deleteChallenge(id){
+ if(redis){await redis.del(`shield:challenge:${id}`)}
+ else{delete memoryStore.challenges[id]}
 }
-
-async function deleteChallenge(id) {
-    memoryStore.challenges.delete(id);
-    if (useRedis) await redis.del(`challenge:${id}`);
-    return true;
+async function addLog(log){
+ if(redis){
+  await redis.lPush('shield:logs',JSON.stringify(log));
+  await redis.lTrim('shield:logs',0,499);
+ }else{
+  memoryStore.logs.unshift(log);
+  if(memoryStore.logs.length>500)memoryStore.logs=memoryStore.logs.slice(0,500);
+ }
 }
-
-// 3. Logs & Stats
-async function addLog(log) {
-    memoryStore.logs.unshift(log);
-    if (memoryStore.logs.length > 1000) memoryStore.logs.length = 1000;
-    if (log.success) memoryStore.stats.success++;
-    
-    if (useRedis) {
-        await redis.lpush('logs', JSON.stringify(log));
-        await redis.ltrim('logs', 0, 999);
-        if (log.success) await redis.incr('stats:success');
-    }
-    return true;
+async function getLogs(limit=50){
+ if(redis){
+  const logs=await redis.lRange('shield:logs',0,limit-1);
+  return logs.map(l=>{try{return JSON.parse(l)}catch{return null}}).filter(Boolean);
+ }
+ return memoryStore.logs.slice(0,limit);
 }
-
-async function getLogs(limit = 50) {
-    if (useRedis) {
-        const logs = await redis.lrange('logs', 0, limit - 1);
-        return logs.map(l => JSON.parse(l));
-    }
-    return memoryStore.logs.slice(0, limit);
+async function clearLogs(){
+ if(redis){await redis.del('shield:logs')}
+ else{memoryStore.logs=[]}
 }
-
-async function clearLogs() {
-    memoryStore.logs = [];
-    if (useRedis) await redis.del('logs');
-    saveToFile();
-    return true;
+async function addSuspend(type,value,data){
+ const key=`${type}:${value}`;
+ if(redis){
+  await redis.hSet('shield:suspends',key,JSON.stringify(data));
+ }else{
+  memoryStore.suspends[key]=data;
+ }
 }
-
-async function getStats() {
-    if (useRedis) {
-        const [suc, chal] = await Promise.all([redis.get('stats:success'), redis.get('stats:challenges')]);
-        return { 
-            success: parseInt(suc) || 0, 
-            challenges: parseInt(chal) || 0, 
-            bans: memoryStore.bans.size 
-        };
-    }
-    return { ...memoryStore.stats, bans: memoryStore.bans.size };
+async function removeSuspend(type,value){
+ const key=`${type}:${value}`;
+ if(redis){await redis.hDel('shield:suspends',key)}
+ else{delete memoryStore.suspends[key]}
 }
-
-// 4. Script Caching
-async function getCachedScript() {
-    if (useRedis) return await redis.get('script_cache');
-    
-    const cached = memoryStore.cache.get('script');
-    if (cached && cached.expiresAt > Date.now()) return cached.data;
-    return null;
+async function getAllSuspends(){
+ if(redis){
+  const all=await redis.hGetAll('shield:suspends');
+  return Object.entries(all).map(([k,v])=>{
+   try{const d=JSON.parse(v);const[type,value]=k.split(':');return{type,value,...d}}catch{return null}
+  }).filter(Boolean);
+ }
+ return Object.entries(memoryStore.suspends).map(([k,v])=>{
+  const[type,value]=k.split(':');return{type,value,...v};
+ });
 }
-
-async function setCachedScript(script, ttl = 300) {
-    if (!script) {
-        memoryStore.cache.delete('script');
-        if (useRedis) await redis.del('script_cache');
-        return;
-    }
-    
-    memoryStore.cache.set('script', { data: script, expiresAt: Date.now() + (ttl * 1000) });
-    if (useRedis) await redis.setex('script_cache', ttl, script);
+async function setCachedScript(script){
+ if(redis){
+  if(script)await redis.setEx('shield:script',3600,script);
+  else await redis.del('shield:script');
+ }else{
+  if(script)memoryStore.cache.script={data:script,ts:Date.now()};
+  else delete memoryStore.cache.script;
+ }
 }
-
-// 5. Suspensions (Temporary Bans / Spy Detection)
-async function addSuspend(type, value, data) {
-    const key = `${type}:${value}`;
-    const entry = { ...data, type, value, createdAt: new Date().toISOString() };
-    memoryStore.suspends.set(key, entry);
-    
-    if (useRedis) {
-        const redisKey = `suspend:${key}`;
-        await redis.set(redisKey, JSON.stringify(entry));
-        if (data.duration) await redis.expire(redisKey, data.duration);
-    }
-    saveToFile();
+async function getCachedScript(){
+ if(redis){return await redis.get('shield:script')}
+ const c=memoryStore.cache.script;
+ if(c&&Date.now()-c.ts<3600000)return c.data;
+ return null;
 }
-
-async function removeSuspend(type, value) {
-    const key = `${type}:${value}`;
-    memoryStore.suspends.delete(key);
-    if (useRedis) await redis.del(`suspend:${key}`);
-    saveToFile();
+async function getStats(){
+ const bans=await getBanCount();
+ const logs=redis?await redis.lLen('shield:logs'):memoryStore.logs.length;
+ const suspends=redis?await redis.hLen('shield:suspends'):Object.keys(memoryStore.suspends).length;
+ return{bans,logs,suspends,redis:isRedisConnected()};
 }
-
-async function getAllSuspends() {
-    if (useRedis) {
-        const keys = await redis.keys('suspend:*');
-        if (keys.length > 0) {
-            const vals = await redis.mget(keys);
-            return vals.map(v => JSON.parse(v));
-        }
-        return [];
-    }
-    return Array.from(memoryStore.suspends.values());
-}
-
-async function clearSuspends() {
-    memoryStore.suspends.clear();
-    if (useRedis) {
-        const keys = await redis.keys('suspend:*');
-        if (keys.length) await redis.del(keys);
-    }
-    saveToFile();
-}
-
-module.exports = {
-    addBan, removeBan, removeBanById, isBanned, getAllBans, clearBans,
-    setChallenge, getChallenge, deleteChallenge,
-    addLog, getLogs, clearLogs,
-    getCachedScript, setCachedScript,
-    getStats,
-    addSuspend, removeSuspend, getAllSuspends, clearSuspends,
-    isRedisConnected: () => useRedis
+initRedis();
+module.exports={
+ isRedisConnected,
+ addBan,getAllBans,removeBanById,clearBans,isBanned,getBanCount,
+ setChallenge,getChallenge,deleteChallenge,
+ addLog,getLogs,clearLogs,
+ addSuspend,removeSuspend,getAllSuspends,
+ setCachedScript,getCachedScript,
+ getStats
 };
