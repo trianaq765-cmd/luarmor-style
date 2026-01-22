@@ -1,18 +1,25 @@
 const crypto=require('crypto');
 let redis=null;
 let memoryStore={bans:{},challenges:{},logs:[],suspends:{},cache:{}};
-const REDIS_URL=process.env.REDIS_URL||process.env.KV_URL||null;
+const REDIS_URL=process.env.REDIS_URL||process.env.UPSTASH_REDIS_URL||null;
+
 async function initRedis(){
 if(REDIS_URL){
 try{
 const{createClient}=require('redis');
-redis=createClient({url:REDIS_URL});
-redis.on('error',e=>console.error('Redis error:',e));
+// Upstash memerlukan TLS
+const isUpstash=REDIS_URL.includes('upstash.io');
+const url=REDIS_URL.startsWith('redis://')&&isUpstash?REDIS_URL.replace('redis://','rediss://'):REDIS_URL;
+redis=createClient({
+url:url,
+socket:isUpstash?{tls:true,rejectUnauthorized:false}:undefined
+});
+redis.on('error',e=>console.error('Redis error:',e.message));
 await redis.connect();
-console.log('✅ Redis Connected');
+console.log('✅ Redis Connected'+(isUpstash?' (Upstash)':''));
 return true;
 }catch(e){console.error('❌ Redis Failed:',e.message);redis=null}}
-console.log('⚠️ Using Memory Store - Data will be lost on restart!');
+console.log('⚠️ Using Memory Store - Data lost on restart!');
 return false;
 }
 function isRedisConnected(){return redis&&redis.isOpen}
